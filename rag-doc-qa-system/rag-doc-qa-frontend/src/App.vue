@@ -37,7 +37,7 @@
                 class="file-item"
               >
                 <div class="file-info">
-                  <file-text-outlined />
+                  <file-text-outlined class="file-icon" />
                   <span class="file-name" :title="doc.name">{{ doc.name }}</span>
                   <span class="file-size">{{ formatSize(doc.size) }}</span>
                 </div>
@@ -129,11 +129,11 @@
     <!-- 底部状态栏 -->
     <div class="footer-status">
       <div class="status-left">
-        <check-circle-outlined />
+        <check-circle-outlined class="status-icon" />
         <span>已处理文档：{{ store.totalDocs }} | 字符数：{{ store.totalChars }}</span>
       </div>
       <div class="status-right">
-        <span>已处理文档：{{ store.totalDocs }} | 字符数：{{ store.totalChars }}</span>
+        <span>已索引片段：{{ store.totalChunks }}</span>
       </div>
     </div>
   </div>
@@ -270,12 +270,19 @@ function formatSize(bytes: number): string {
 </script>
 
 <style scoped>
+/* ============ 布局骨架 ============ */
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 24px;
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-gradient-start) 0%,
+    var(--color-bg-gradient-end) 100%
+  );
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
 }
 
 .container {
@@ -285,13 +292,16 @@ function formatSize(bytes: number): string {
   margin: 0 auto;
 }
 
+/* ============ 面板 ============ */
 .panel {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: var(--color-panel-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
   height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
+  padding: var(--space-6);
+  overflow: hidden;
 }
 
 .chat-panel {
@@ -299,65 +309,95 @@ function formatSize(bytes: number): string {
 }
 
 .panel-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-title);
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .title-icon {
-  color: #fbbf24;
-  margin-right: 8px;
-  font-size: 20px;
+  color: var(--color-warning);
+  margin-right: var(--space-2);
+  font-size: var(--icon-size-lg);
 }
 
 .panel-subtitle {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 16px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
 }
 
+/* ============ 上传区 ============ */
 .upload-area {
-  border-radius: 12px;
-  background: #f8fafc;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
 }
 
 .upload-area :deep(.ant-upload-drag) {
-  border-radius: 12px;
-  border: 2px dashed #c7d2fe;
-  background: #f8fafc;
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--color-accent-border);
+  background: var(--color-surface-subtle);
+  transition: border-color var(--transition-base), background-color var(--transition-base);
 }
 
+.upload-area :deep(.ant-upload-drag:hover),
+.upload-area :deep(.ant-upload-drag.ant-upload-drag-hover) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+/* ============ 文件列表 ============ */
 .file-list {
   flex: 1;
+  min-height: 120px;
   overflow-y: auto;
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .empty-tip {
   text-align: center;
-  color: #9ca3af;
-  font-size: 13px;
-  padding: 24px 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-md);
+  padding: var(--space-8) 0;
 }
 
 .file-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  background: #f8fafc;
-  border-radius: 8px;
-  margin-bottom: 8px;
+  padding: var(--space-3);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+  transition: background-color var(--transition-base), box-shadow var(--transition-base),
+    transform var(--transition-base);
+}
+
+.file-item:hover {
+  background: var(--color-accent-soft);
+  box-shadow: var(--shadow-hover);
+}
+
+.file-item:active {
+  transform: scale(0.995);
 }
 
 .file-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   overflow: hidden;
+}
+
+.file-icon {
+  color: var(--color-accent);
+  font-size: var(--icon-size-sm);
+  flex-shrink: 0;
 }
 
 .file-name {
@@ -365,45 +405,55 @@ function formatSize(bytes: number): string {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #374151;
+  color: var(--color-text);
+  font-size: var(--font-size-base);
 }
 
 .file-size {
-  color: #9ca3af;
-  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
 }
 
 .file-status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
+  flex-shrink: 0;
 }
 
 .remove-icon {
-  color: #9ca3af;
+  color: var(--color-text-tertiary);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--icon-size-sm);
+  transition: color var(--transition-base), transform var(--transition-base);
 }
 
 .remove-icon:hover {
-  color: #ef4444;
+  color: var(--color-danger);
+  transform: scale(1.15);
 }
 
+.remove-icon:active {
+  transform: scale(0.9);
+}
+
+/* ============ 操作栏 / 统计栏 ============ */
 .action-bar {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
 .stats-bar {
   display: flex;
   justify-content: space-around;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
 .stat-item {
@@ -411,30 +461,33 @@ function formatSize(bytes: number): string {
 }
 
 .stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #3b82f6;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-accent);
 }
 
 .stat-label {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 4px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
 }
 
+/* ============ 聊天区 ============ */
 .chat-list {
   flex: 1;
+  min-height: 160px;
   overflow-y: auto;
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .message {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .message.user {
@@ -447,79 +500,164 @@ function formatSize(bytes: number): string {
 
 .message-bubble {
   max-width: 80%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  line-height: 1.6;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  line-height: var(--line-height-base);
+  font-size: var(--font-size-base);
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .message.user .message-bubble {
-  background: #3b82f6;
+  background: var(--color-accent);
   color: #fff;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: var(--space-1);
 }
 
 .message.assistant .message-bubble {
   background: #fff;
-  color: #1f2937;
-  border: 1px solid #e5e7eb;
-  border-bottom-left-radius: 4px;
+  color: var(--color-title);
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: var(--space-1);
 }
 
 .message-time {
-  font-size: 11px;
-  color: #9ca3af;
-  margin-top: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
 }
 
 .chat-actions {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .chat-input-area {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: stretch;
 }
 
 .chat-input-area :deep(.ant-input) {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   resize: none;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.chat-input-area :deep(.ant-input:focus),
+.chat-input-area :deep(.ant-input-focused) {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 
 .send-btn {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   width: 80px;
   height: auto;
-  background: #22c55e;
-  border-color: #22c55e;
+  background: var(--color-success);
+  border-color: var(--color-success);
+  transition: background-color var(--transition-base), border-color var(--transition-base),
+    transform var(--transition-base);
 }
 
 .send-btn:hover {
-  background: #16a34a;
-  border-color: #16a34a;
+  background: var(--color-success-strong);
+  border-color: var(--color-success-strong);
 }
 
+.send-btn:active {
+  transform: scale(0.97);
+}
+
+/* ============ 按钮通用交互反馈 ============ */
+:deep(.ant-btn) {
+  transition: color var(--transition-base), background-color var(--transition-base),
+    border-color var(--transition-base), transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+:deep(.ant-btn:not(.ant-btn-primary)):hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+:deep(.ant-btn:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+:deep(.ant-btn:active) {
+  transform: scale(0.98);
+}
+
+/* ============ 底部状态栏 ============ */
 .footer-status {
   max-width: 1400px;
   width: 100%;
-  margin: 16px auto 0;
+  margin: var(--space-4) auto 0;
   background: rgba(31, 41, 55, 0.85);
   color: #fff;
-  border-radius: 8px;
-  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--font-size-md);
+  backdrop-filter: blur(4px);
 }
 
-.status-left {
+.status-left,
+.status-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
+}
+
+.status-icon {
+  font-size: var(--icon-size-sm);
+}
+
+/* ============ 响应式适配 ============ */
+@media (max-width: 991px) {
+  .panel {
+    height: auto;
+    min-height: 50vh;
+  }
+  .file-list {
+    max-height: 40vh;
+  }
+  .chat-list {
+    max-height: 50vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: var(--space-4);
+  }
+  .panel {
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+  }
+  .footer-status {
+    font-size: var(--font-size-sm);
+    padding: var(--space-2) var(--space-4);
+  }
+  .stat-value {
+    font-size: var(--font-size-lg);
+  }
+  .message-bubble {
+    max-width: 88%;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-right {
+    display: none;
+  }
+  .send-btn {
+    width: 64px;
+  }
 }
 </style>

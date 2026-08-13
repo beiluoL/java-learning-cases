@@ -1,0 +1,71 @@
+/**
+ * UI 设计令牌（Design Tokens）
+ * 作用：将配色、间距、圆角、字体、阴影、过渡集中为 CSS 变量，
+ *       供各组件统一引用，确保视觉一致、便于维护。
+ * 注意：本文件仅沉淀"已有整体风格"的规范值，不引入新的视觉语言。
+ */
+
+:root {
+  /* ---------- 配色（保持现有整体风格） ---------- */
+  --color-bg-gradient-start: #667eea; /* 页面渐变起 */
+  --color-bg-gradient-end: #764ba2;   /* 页面渐变止 */
+  --color-panel-bg: #ffffff;          /* 面板底色 */
+  --color-title: #1f2937;             /* 标题文字 */
+  --color-text: #374151;              /* 正文文字 */
+  --color-text-secondary: #6b7280;    /* 次级文字 */
+  --color-text-tertiary: #9ca3af;     /* 辅助/占位文字 */
+  --color-border: #e5e7eb;            /* 分隔线/边框 */
+  --color-surface-subtle: #f8fafc;    /* 浅灰底（列表/上传区/聊天区） */
+
+  --color-accent: #3b82f6;            /* 主强调（蓝） */
+  --color-accent-strong: #2563eb;     /* 蓝 - hover */
+  --color-accent-soft: #eef2ff;       /* 蓝 - 浅底 */
+  --color-accent-border: #c7d2fe;     /* 蓝 - 虚线边框 */
+
+  --color-success: #22c55e;           /* 发送/成功（绿） */
+  --color-success-strong: #16a34a;    /* 绿 - hover */
+  --color-warning: #fbbf24;           /* 标题图标（琥珀） */
+  --color-danger: #ef4444;            /* 危险/删除 */
+
+  /* ---------- 间距尺度（4px 基数，符合 AntD 规范） ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ---------- 圆角 ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* ---------- 字体与排版 ---------- */
+  --font-size-xs: 11px;   /* 时间戳等极小字 */
+  --font-size-sm: 12px;   /* 辅助说明 */
+  --font-size-md: 13px;   /* 副标题/状态 */
+  --font-size-base: 14px; /* 正文基准 */
+  --font-size-lg: 18px;   /* 面板标题 */
+  --font-size-xl: 22px;   /* 统计数值 */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.4;
+  --line-height-base: 1.6;
+
+  /* ---------- 阴影 ---------- */
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 4px 16px rgba(59, 130, 246, 0.12);
+
+  /* ---------- 过渡 ---------- */
+  --transition-base: 0.2s ease;
+
+  /* ---------- 图标尺寸等级 ---------- */
+  --icon-size-sm: 14px;   /* 行内功能图标 */
+  --icon-size-md: 16px;   /* 常规图标 */
+  --icon-size-lg: 20px;   /* 面板标题图标 */
+}
