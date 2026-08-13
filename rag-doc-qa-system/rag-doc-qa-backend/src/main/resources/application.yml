@@ -1,0 +1,66 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: rag-doc-qa-backend
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  ai:
+    # SiliconFlow：负责 Embedding（向量化）
+    # 注册地址：https://cloud.siliconflow.cn
+    openai:
+      base-url: https://api.siliconflow.cn
+      api-key: ${SILICONFLOW_API_KEY:}
+      # 禁用默认的 ChatModel，改用手动配置的 DeepSeek ChatModel
+      chat:
+        enabled: false
+      embedding:
+        options:
+          model: BAAI/bge-large-zh-v1.5
+
+    # Milvus 向量库配置
+    vectorstore:
+      milvus:
+        client:
+          host: localhost
+          port: 19530
+        collection:
+          name: rag_doc_chunks
+          # 与 embedding 模型维度一致：bge-large-zh-v1.5 是 1024
+          vector-field: embedding
+          dimension: 1024
+          index-type: IVF_FLAT
+          metric-type: COSINE
+          metadata-fields:
+            - field-name: doc_name
+              data-type: VarChar
+              max-length: 512
+            - field-name: chunk_index
+              data-type: Int64
+
+# DeepSeek：负责对话生成
+# 注册地址：https://platform.deepseek.com
+llm:
+  deepseek:
+    enabled: true
+    base-url: https://api.deepseek.com
+    api-key: ${DEEPSEEK_API_KEY:}
+    model: deepseek-chat
+    temperature: 0.3
+
+# 应用级配置
+app:
+  rag:
+    # 文本切片：单块最大字符数
+    chunk-size: 800
+    # 相邻块重叠字符数
+    chunk-overlap: 100
+    # 检索 Top-K
+    top-k: 5
+    # 上传文件临时目录
+    upload-dir: ./uploads
