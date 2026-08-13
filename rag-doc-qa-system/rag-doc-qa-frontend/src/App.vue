@@ -304,6 +304,16 @@ function formatSize(bytes: number): string {
   overflow: hidden;
 }
 
+/* Ant Card 会把插槽内容包在 .ant-card-body 内，必须让它也参与 flex 列布局，
+   内部子元素（文件列表 flex:1、底部操作栏）才能正确分布。 */
+.panel :deep(.ant-card-body) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 !important;
+}
+
 .chat-panel {
   padding-bottom: 0;
 }
