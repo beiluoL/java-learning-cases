@@ -2,9 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
     <title>SSM 企业级后台管理</title>
-    <!-- Layui 通过 CDN 引入；如需离线，可把 Layui 下载到 /static/layui 并改成相对路径 -->
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/layui/2.9.7/layui.min.css">
+    <!-- Layui 已本地化到 /static/layui（无需 CDN，离线可用） -->
+    <link rel="stylesheet" href="/static/layui/css/layui.css">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="layui-layout-body">
@@ -40,7 +41,7 @@
     <div class="layui-footer">SSM-Learn © 企业级框架学习模板</div>
 </div>
 
-<script src="https://cdn.bootcdn.net/ajax/libs/layui/2.9.7/layui.min.js"></script>
+<script src="/static/layui/layui.js"></script>
 <script src="/static/js/common.js"></script>
 <script>
     layui.use(['element'], function () {

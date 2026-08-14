@@ -131,7 +131,7 @@ ssm-learn
 5. **配置 Tomcat**：Deployment 添加本项目，`Application context` 建议设为 `/`（便于前端 `ctx` 识别）；启动访问 `http://localhost:8080/`。
 6. **Druid 监控**：访问 `http://localhost:8080/druid`，账号 `admin` / 密码 `admin123`。
 
-> 前端 Layui 通过 CDN 引入；若要离线运行，把 Layui 下载到 `webapp/static/layui` 并修改页面 `<link>/<script>` 路径即可。
+> 前端 Layui **已本地化**到 `src/main/webapp/static/layui/`（含 `layui.js` 与 `css/layui.css`，以及 `font/` 图标字体），页面通过 `/static/layui/...` 引用，**无需任何 CDN、离线可直接运行**。Layui 内置 jQuery 通过 `layui.$` 使用（页面里已 `var $ = layui.$;`，避免全局 `$` 未定义的报错）。
 
 ---
 
