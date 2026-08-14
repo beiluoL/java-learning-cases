@@ -13,6 +13,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * 对话接口：以 SSE（text/event-stream）方式将 Agent 回复分片流式推送，
@@ -48,7 +51,25 @@ public class ChatController {
                         "conversationId", conv.getId(),
                         "title", conv.getTitle())));
 
-                AgentReply reply = agentService.handle(conv, userMessage, req.isForceEscalate());
+                // 文本流式推送的回调：每收到一个 token 立即推送给前端
+                AtomicBoolean clientGone = new AtomicBoolean(false);
+                Consumer<String> sink = tok -> {
+                    if (clientGone.get() || tok == null) return;
+                    try {
+                        emitter.send(ChatEvent.of("text", tok));
+                    } catch (IOException e) {
+                        clientGone.set(true);
+                    }
+                };
+
+                AgentReply reply = agentService.handle(conv, userMessage, req.isForceEscalate(), sink);
+
+                // 客户端若在流式过程中已断开，后续事件无需再推，直接结束
+                if (clientGone.get()) {
+                    log.debug("[Chat] 客户端已断开，跳过后续事件");
+                    emitter.complete();
+                    return;
+                }
 
                 // 意图识别结果
                 emitter.send(ChatEvent.of("intent", Map.of(
@@ -77,12 +98,7 @@ public class ChatController {
                             "reason", reply.getEscalateReason())));
                 }
 
-                // 文本分片流式推送
-                for (String chunk : chunk(reply.getContent())) {
-                    emitter.send(ChatEvent.of("text", chunk));
-                    Thread.sleep(18);
-                }
-
+                // 文本已由 AgentService 通过 sink 逐 token 流式推送完毕，这里发送结束事件
                 emitter.send(ChatEvent.of("done", Map.of(
                         "conversationId", conv.getId(),
                         "escalated", reply.isEscalated(),
@@ -101,20 +117,6 @@ public class ChatController {
         emitter.onCompletion(() -> log.debug("[Chat] SSE completed"));
         emitter.onError((e) -> log.debug("[Chat] SSE error: {}", e.getMessage()));
         return emitter;
-    }
-
-    /** 将文本切成小块以模拟流式输出。 */
-    private List<String> chunk(String text) {
-        if (text == null) return List.of();
-        List<String> chunks = new ArrayList<>();
-        int i = 0;
-        int n = text.length();
-        while (i < n) {
-            int end = Math.min(i + 3, n);
-            chunks.add(text.substring(i, end));
-            i = end;
-        }
-        return chunks;
     }
 
     private double round(double v) {

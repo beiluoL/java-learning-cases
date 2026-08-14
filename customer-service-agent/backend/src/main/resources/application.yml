@@ -29,7 +29,7 @@ app:
   # 是否启用 CodeBuddy 桥接（Node 服务）。设为 true 且桥接可达时，Agent 回复由 CodeBuddy 大模型生成；
   # 否则使用本地规则引擎（意图识别 + FAQ 检索 + 模板）兜底，保证离线可用。
   codebuddy:
-    enabled: false
+    enabled: true
     base-url: http://localhost:3001
     # 检索阈值：FAQ 最高分低于该值视为未命中，触发转人工/兜底
     # （当前打分模型中，单个关键词重合约 +3，2-gram 重合约 +1）

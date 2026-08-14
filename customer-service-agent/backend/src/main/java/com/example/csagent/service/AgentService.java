@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * 客服 Agent 编排核心：
@@ -55,10 +57,10 @@ public class AgentService {
     }
 
     @Transactional
-    public AgentReply handle(Conversation conv, String userMessage, boolean forceEscalate) {
+    public AgentReply handle(Conversation conv, String userMessage, boolean forceEscalate, Consumer<String> tokenSink) {
         // 1) 主动/强制转人工
         if (forceEscalate || intentService.isEscalationRequest(userMessage)) {
-            return escalate(conv, userMessage, "USER_REQUEST", "用户主动要求转人工");
+            return escalate(conv, userMessage, "USER_REQUEST", "用户主动要求转人工", tokenSink);
         }
 
         IntentResult ir = intentService.recognize(userMessage);
@@ -70,6 +72,7 @@ public class AgentService {
         // 2) 寒暄 / 致谢兜底（不转人工）
         if (ir.getIntent() == Intent.UNKNOWN && isSmallTalk(userMessage)) {
             String reply = buildSmallTalk(userMessage);
+            streamOut(reply, tokenSink);
             conversationService.saveAssistantMessage(conv, reply, Intent.UNKNOWN, null, false);
             AgentReply r = baseReply(ir);
             r.setContent(reply);
@@ -85,14 +88,19 @@ public class AgentService {
         if (ir.getIntent() == Intent.UNKNOWN) threshold += 2.0;
 
         if (topScore >= threshold) {
-            // 命中知识库 -> LLM 生成（CodeBuddy 或本地）
+            // 命中知识库 -> LLM 生成（CodeBuddy 或本地），逐 token 流式输出
             AgentContext ctx = new AgentContext();
             ctx.setUserMessage(userMessage);
             ctx.setIntent(ir);
             ctx.setFaqs(faqs);
             ctx.setHistory(priorHistory);
             LlmService engine = appProperties.getCodebuddy().isEnabled() ? codeBuddyAgent : localAgent;
-            String answer = engine.generate(ctx);
+            StringBuilder answerBuf = new StringBuilder();
+            engine.streamGenerate(ctx, tok -> {
+                answerBuf.append(tok);
+                if (tokenSink != null) tokenSink.accept(tok);
+            });
+            String answer = answerBuf.toString();
 
             // 记录主导意图到会话
             if (conv.getIntent() == null && ir.getIntent() != Intent.UNKNOWN) {
@@ -114,14 +122,14 @@ public class AgentService {
                 ? "UNKNOWN_INTENT" : (faqs.isEmpty() ? "FAQ_MISS" : "LOW_CONFIDENCE");
         String summary = "用户诉求：" + userMessage
                 + (ir.getIntent() != Intent.UNKNOWN ? "（疑似意图：" + ir.getIntent().getLabel() + "）" : "");
-        return escalate(conv, userMessage, reason, summary, ir);
+        return escalate(conv, userMessage, reason, summary, ir, tokenSink);
     }
 
-    private AgentReply escalate(Conversation conv, String userMessage, String reason, String summary) {
-        return escalate(conv, userMessage, reason, summary, null);
+    private AgentReply escalate(Conversation conv, String userMessage, String reason, String summary, Consumer<String> tokenSink) {
+        return escalate(conv, userMessage, reason, summary, null, tokenSink);
     }
 
-    private AgentReply escalate(Conversation conv, String userMessage, String reason, String summary, IntentResult ir) {
+    private AgentReply escalate(Conversation conv, String userMessage, String reason, String summary, IntentResult ir, Consumer<String> tokenSink) {
         if (ir == null) ir = intentService.recognize(userMessage);
         EscalationTicket ticket = escalationService.create(conv, reason, ir.getIntent(), summary);
         conversationService.markEscalated(conv);
@@ -135,6 +143,7 @@ public class AgentService {
                     + ticket.getId() + "。我们的坐席会尽快跟进，您也可以补充更多细节以便更快解决。";
         }
         conversationService.saveAssistantMessage(conv, content, ir.getIntent(), null, true);
+        streamOut(content, tokenSink);
 
         AgentReply r = baseReply(ir);
         r.setContent(content);
@@ -154,8 +163,25 @@ public class AgentService {
         return r;
     }
 
-    private boolean isSmallTalk(String text) {
-        String lower = text.toLowerCase().trim();
+    /** 把一段已确定的文本按 3 字分片流式推送（用于寒暄/转人工等不走 LLM 的场景）。 */
+    private void streamOut(String text, Consumer<String> tokenSink) {
+        if (text == null || tokenSink == null) return;
+        int i = 0;
+        int n = text.length();
+        while (i < n) {
+            int end = Math.min(i + 3, n);
+            tokenSink.accept(text.substring(i, end));
+            i = end;
+            try {
+                Thread.sleep(15);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+    private boolean isSmallTalk(String text) {        String lower = text.toLowerCase().trim();
         if (lower.length() > 12) return false; // 较长句子通常不是寒暄
         for (String g : GREETINGS) if (lower.contains(g)) return true;
         for (String g : GRATITUDE) if (lower.contains(g)) return true;
