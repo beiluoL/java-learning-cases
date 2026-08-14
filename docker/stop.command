@@ -1,0 +1,10 @@
+#!/bin/bash
+PROJECT_DIR="$(cd "$(dirname "$0")"; pwd)"
+cd "$PROJECT_DIR"
+echo "===================================================="
+echo "  docker · 停止 Milvus + Attu"
+echo "===================================================="
+docker compose -f milvus-standalone-docker-compose.yml down 2>/dev/null && echo "  ✓ 已停止 Milvus" || echo "  · 无运行中的 Milvus"
+docker compose -f attu-compose.yml down 2>/dev/null && echo "  ✓ 已停止 Attu" || echo "  · 无运行中的 Attu"
+echo "完成。"
+read -n 1 -s -r -p "按任意键退出..."
