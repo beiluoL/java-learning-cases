@@ -10,8 +10,10 @@
 ```
 ssm-learn
 ├── pom.xml                          # Maven 依赖与构建（版本统一在 <properties> 管理；含 jetty 插件）
-├── start.sh                         # 一键启动（前端 8081 + 后端 8080）
-├── stop.sh                          # 一键关闭
+├── start.command                    # 【macOS】一键启动（双击 / 终端均可，前端 8081 + 后端 8080）
+├── stop.command                     # 【macOS】一键关闭
+├── start.bat                        # 【Windows】一键启动（双击 / 命令行均可）
+├── stop.bat                         # 【Windows】一键关闭
 ├── scripts/
 │   └── frontend-dev-server.js       # 前端预览服务（Node 零依赖 + API 反代）
 ├── sql/
@@ -92,32 +94,32 @@ ssm-learn
 
 ---
 
-## 四、一键启动 / 关闭脚本（推荐方式）
+## 四、一键启动 / 关闭脚本（推荐方式，macOS + Windows 双击直接运行）
 
-项目已内置一键脚本，**无需手动安装 Tomcat**：后端用 Maven 嵌入式 Jetty（`mvn jetty:run`）直接启动，前端用 Node 零依赖静态预览服务 + API 反代（端口 `8081`）一并拉起。
+项目已内置一键脚本，**无需手动安装 Tomcat**：后端用 Maven 嵌入式 Jetty（`mvn jetty:run`）直接启动，前端用 Node 零依赖静态预览服务 + API 反代（端口 `8081`）一并拉起。**支持 macOS 与 Windows 通过鼠标双击直接运行，无需命令行。**
 
 ```
 ssm-learn
-├── start.sh                        # 一键启动：先后台拉起前端(8081)与后端(8080)
-├── stop.sh                         # 一键关闭：精准关停两个服务进程
+├── start.command                   # 【macOS】一键启动（双击 start.command 即可）
+├── stop.command                    # 【macOS】一键关闭
+├── start.bat                       # 【Windows】一键启动（双击 start.bat 即可）
+├── stop.bat                        # 【Windows】一键关闭
 └── scripts/
     └── frontend-dev-server.js      # 前端预览服务（Node 原生 http，零第三方依赖）
 ```
 
-**使用**：
+**macOS（双击）**：在 Finder 中双击 `start.command` → 自动打开终端并执行；`stop.command` 同理。
+**Windows（双击）**：在资源管理器中双击 `start.bat` → 自动打开 cmd 并执行；`stop.bat` 同理（首行 `chcp 65001` 已处理中文，无需额外配置）。
+**终端/命令行用户**：也可在终端执行 `bash start.command` / `start.bat`。
 
-```bash
-cd ssm-learn
-chmod +x start.sh stop.sh          # 首次需赋予执行权限（已默认加好）
-./start.sh                          # 启动，终端展示两个服务的状态与日志
-./stop.sh                           # 关闭
-```
+脚本行为约定：
 
+- **启动（start）**：同时拉起前端与后端；启动前检测端口/进程——**若已运行则自动先停后起（自动重启）**；启动后清晰打印前后端访问地址；任一服务失败会明确提示原因；日志分别写入 `logs/backend.log`、`logs/frontend.log`。
+- **关闭（stop）**：依据启动脚本记录的 PID 文件 + 明确端口精准关停本项目进程，**不会误杀其它项目**；多次关闭幂等（无运行时友好提示）；双击场景下窗口保持以便查看结果。
 - 后端访问：`http://localhost:8080/`（工作台、Druid 监控同此端口）
 - 前端访问：`http://localhost:8081/`（页面走同源 `ctx`，`/api/*` 自动反代到后端 8080）
-- 脚本特性：自动识别项目根目录；后端/前端分别记录 PID 与日志（`logs/backend.log`、`logs/frontend.log`）；任一服务启动失败会及时提示；`stop.sh` 按 PID 精准关停，不误杀其他进程。
-- 前置：JDK 8+、Maven 3.x、Node.js（双击 `start.sh` 或终端执行均可；Maven 首次运行会自动下载依赖）。
 
+> 兼容性提示：macOS 下载得到的脚本若双击无反应，多为系统隔离标志所致，执行 `xattr -d com.apple.quarantine start.command stop.command` 或用「右键 → 打开」一次即可；本地创建的文件一般无需此步。
 > 想走传统 Tomcat 部署？见下一节。
 
 ## 五、运行步骤
