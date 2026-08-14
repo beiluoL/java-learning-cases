@@ -136,6 +136,24 @@ Java 用 `HttpClient` 逐行消费该 SSE → 经 `SseEmitter` 把每个 token �
 - 调用超时（桥接默认 `CODEBUDDY_STREAM_TIMEOUT_MS=90000`，超时即降级）。
 > 因此在「CodeBuddy 真实返回」与「本地引擎兜底」两种模式下，前端都看到的是平滑的逐字流式效果。
 
+### 4. 一键启动 + 真实流式校验（推荐）
+项目根目录提供了校验脚本，自动拉起三个服务并验证「逐 token 流式」是否真的跑通：
+```bash
+# macOS / Linux（终端执行；或双击 verify.command）
+bash verify.sh
+# 仅校验（假设服务已在运行）
+bash verify.sh --no-start
+```
+Windows 用户双击 `verify.bat` 即可。
+
+脚本会：
+1. 按需启动 `agent-bridge(:3001)` → 后端 `(:8080)` → 前端 `(:5173)`（已占用则复用，不重复拉起）；
+2. 等待三者就绪后，向 `/api/chat/stream` 发一条测试消息，统计真实下发的 `text` token 数（证明是逐 token 流式，而非整段一次性返回）；
+3. 通过后端日志标记判定当前是 **【真实 CodeBuddy 大模型】** 还是 **【本地引擎降级】**，降级时给出具体原因（DLP 网关不可达 / 调用超时 / CLI 未装 / 无 Key 或登录态）；
+4. 输出访问地址与 PASS/FAIL 结论。
+
+> 在受限沙箱（企业 DLP 网关不可达）下会正确显示「本地引擎降级（仍可流式）」，这是预期行为；本机 DLP 服务可达时会显示「真实 CodeBuddy 流式」。
+
 ---
 
 ## 主要 API
