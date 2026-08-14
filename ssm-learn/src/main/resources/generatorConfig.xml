@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MyBatis Generator 代码生成器配置（二次开发利器）
+     用法：IDE 安装 MyBatis Generator 插件后右键 Run，或执行
+     mvn mybatis-generator:generate
+     生成 entity / mapper 接口 / mapper.xml，再手写 service + controller 即可。 -->
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+    <context id="MysqlContext" targetRuntime="MyBatis3">
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3306/ssm_learn?serverTimezone=Asia/Shanghai"
+                        userId="root" password="root"/>
+        <!-- 实体类 -->
+        <javaModelGenerator targetPackage="com.example.ssm.entity" targetProject="src/main/java"/>
+        <!-- Mapper 接口 -->
+        <sqlMapGenerator targetPackage="com.example.ssm.dao" targetProject="src/main/java"/>
+        <!-- Mapper XML -->
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources/mybatis"/>
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.example.ssm.dao" targetProject="src/main/java"/>
+        <!-- 需要生成的表，tableName 用 % 可全库生成 -->
+        <table tableName="sys_user" domainObjectName="User"/>
+    </context>
+</generatorConfiguration>

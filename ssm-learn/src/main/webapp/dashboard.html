@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>工作台</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/layui/2.9.7/layui.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="layui-fluid" style="padding:20px;">
+    <blockquote class="layui-elem-quote">SSM 企业级框架学习模板 · 工作台</blockquote>
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md4">
+            <div class="layui-card">
+                <div class="layui-card-header">用户总数</div>
+                <div class="layui-card-body" style="font-size:32px;font-weight:bold;color:#1E9FFF;">
+                    <span id="totalUsers">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="layui-card">
+                <div class="layui-card-header">技术栈</div>
+                <div class="layui-card-body">Spring + SpringMVC + MyBatis + Layui</div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="layui-card">
+                <div class="layui-card-header">上手指引</div>
+                <div class="layui-card-body">左侧「系统管理 → 用户管理」体验完整 CRUD</div>
+            </div>
+        </div>
+    </div>
+    <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top:20px;">
+        提示：所有后端接口前缀 <b>/api</b>，返回统一 JSON（code/msg/data），可据此扩展更多模块。
+    </blockquote>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/layui/2.9.7/layui.min.js"></script>
+<script src="/static/js/common.js"></script>
+<script>
+    request('/api/dashboard/stats').then(function (res) {
+        if (res.code === 0) {
+            document.getElementById('totalUsers').innerText = res.data.totalUsers;
+        }
+    });
+</script>
+</body>
+</html>

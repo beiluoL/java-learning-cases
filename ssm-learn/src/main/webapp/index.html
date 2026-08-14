@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>SSM 企业级后台管理</title>
+    <!-- Layui 通过 CDN 引入；如需离线，可把 Layui 下载到 /static/layui 并改成相对路径 -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/layui/2.9.7/layui.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <!-- 顶部 -->
+    <div class="layui-header">
+        <div class="layui-logo">SSM 管理后台</div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item"><a href="javascript:;">管理员</a></li>
+            <li class="layui-nav-item"><a href="/druid" target="_blank">Druid 监控</a></li>
+        </ul>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree">
+                <li class="layui-nav-item layui-nav-itemed">
+                    <a href="javascript:;">系统管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" data-url="/page/user/list.html">用户管理</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 内容区：用 iframe 承载各功能页面 -->
+    <div class="layui-body">
+        <iframe id="mainFrame" src="/dashboard.html" frameborder="0"></iframe>
+    </div>
+
+    <div class="layui-footer">SSM-Learn © 企业级框架学习模板</div>
+</div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/layui/2.9.7/layui.min.js"></script>
+<script src="/static/js/common.js"></script>
+<script>
+    layui.use(['element'], function () {
+        // 点击菜单，切换 iframe 内容
+        document.querySelectorAll('.layui-nav-child a[data-url]').forEach(function (a) {
+            a.addEventListener('click', function () {
+                document.getElementById('mainFrame').src = ctx + a.getAttribute('data-url');
+            });
+        });
+    });
+</script>
+</body>
+</html>

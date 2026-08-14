@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- ① 扫描 Controller 与全局异常处理（@ControllerAdvice 放在 common.exception 包下） -->
+    <context:component-scan base-package="com.example.ssm.controller"/>
+    <context:component-scan base-package="com.example.ssm.common.exception"/>
+
+    <!-- ② 开启注解驱动：支持 @RequestMapping、@ResponseBody，并自动注册 JSON 转换器 -->
+    <mvc:annotation-driven/>
+
+    <!-- ③ 静态资源放行（不走 DispatcherServlet） -->
+    <mvc:resources mapping="/static/**" location="/static/"/>
+    <mvc:resources mapping="/page/**" location="/page/"/>
+    <!-- 其余未被映射的请求交给容器默认 Servlet 处理（如 index.html） -->
+    <mvc:default-servlet-handler/>
+
+    <!-- ④ JSP 视图解析器（本项目以 HTML + AJAX 为主，此处保留以便扩展 JSP 页面） -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+</beans>

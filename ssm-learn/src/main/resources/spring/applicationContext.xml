@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- ① 引入数据库配置文件 -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!-- ② 数据源：阿里巴巴 Druid 连接池（企业级，自带监控） -->
+    <!-- Druid 设为惰性初始化：即便 MySQL 未启动，Spring 容器也能正常加载；
+         仅在实际访问数据库时再校验连接，便于“一键启动”直接把服务拉起 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="initialSize" value="5"/>
+        <property name="minIdle" value="5"/>
+        <property name="maxActive" value="20"/>
+        <property name="maxWait" value="60000"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="validationQuery" value="SELECT 1"/>
+    </bean>
+
+    <!-- ③ SqlSessionFactory：MyBatis 核心，整合 dataSource -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+        <property name="mapperLocations" value="classpath:mybatis/mapper/*.xml"/>
+        <!-- 实体类别名包，XML 中可直接用类名（如 User） -->
+        <property name="typeAliasesPackage" value="com.example.ssm.entity"/>
+    </bean>
+
+    <!-- ④ Mapper 扫描：把 mapper 接口生成代理对象交给 Spring 管理
+         注意：用 sqlSessionFactoryBeanName（按名引用），避免与 property-placeholder 加载顺序冲突 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.example.ssm.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- ⑤ 事务管理器 + 注解驱动（@Transactional 生效） -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- ⑥ 启用 AOP：支撑 common.aspect 中的日志切面 -->
+    <aop:aspectj-autoproxy/>
+
+    <!-- ⑦ 组件扫描：扫描 service / 工具 / 切面 等
+         排除 @Controller（交给 SpringMVC 子容器扫描），排除 @ControllerAdvice（由 web 容器注册） -->
+    <context:component-scan base-package="com.example.ssm">
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+    </context:component-scan>
+</beans>
