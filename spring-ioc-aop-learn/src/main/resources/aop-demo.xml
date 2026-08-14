@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  aop-demo.xml —— IoC + AOP 整合演示配置
+  目的：在 IoC 容器里声明 Bean，并通过 DefaultAdvisorAutoProxyCreator 自动把 AOP 织入。
+
+  关键角色：
+    · 目标对象：userService（实现接口 → JDK 代理）、orderService（无接口 → CGLIB 代理）
+    · 通知 Advice：logBeforeAdvice / logAfterAdvice / logAroundAdvice / logThrowsAdvice
+    · 切点 Pointcut：pcCreateUser / pcStarUser / pcPlaceOrder（按方法名匹配）
+    · 通知器 Advisor：advisor*（= Pointcut + Advice）
+    · 自动代理器：DefaultAdvisorAutoProxyCreator（BeanPostProcessor，负责织入）
+
+  织入结果（以 createUser 为例）：前置 → 环绕 → 后置返回 → 异常 → 目标方法
+-->
+<beans>
+
+    <!-- ============ 1. 目标对象（被增强的 Bean） ============ -->
+    <bean id="userDao" class="com.learn.springmini.demo.dao.UserDaoImpl"/>
+
+    <bean id="userService" class="com.learn.springmini.demo.service.UserServiceImpl">
+        <constructor-arg index="0" ref="userDao"/>
+        <property name="appName" value="Mini-Spring-AOP"/>
+    </bean>
+
+    <!-- 该 Bean 不实现接口，AOP 会用 CGLIB（继承子类）代理 -->
+    <bean id="orderService" class="com.learn.springmini.demo.service.OrderServiceImpl">
+        <property name="shopName" value="码上书店"/>
+    </bean>
+
+    <!-- ============ 2. 通知（Advice，横切逻辑） ============ -->
+    <bean id="logBeforeAdvice" class="com.learn.springmini.demo.aspect.LogMethodBeforeAdvice"/>
+    <bean id="logAfterAdvice" class="com.learn.springmini.demo.aspect.LogAfterReturningAdvice"/>
+    <bean id="logAroundAdvice" class="com.learn.springmini.demo.aspect.LogAroundInterceptor"/>
+    <bean id="logThrowsAdvice" class="com.learn.springmini.demo.aspect.ExceptionThrowsAdvice"/>
+
+    <!-- ============ 3. 切点（Pointcut，增强范围） ============ -->
+    <bean id="pcCreateUser" class="com.learn.springmini.aop.pointcut.NameMatchMethodPointcut">
+        <property name="mappedName" value="createUser"/>
+    </bean>
+    <bean id="pcStarUser" class="com.learn.springmini.aop.pointcut.NameMatchMethodPointcut">
+        <property name="mappedName" value="*User"/>
+    </bean>
+    <bean id="pcPlaceOrder" class="com.learn.springmini.aop.pointcut.NameMatchMethodPointcut">
+        <property name="mappedName" value="placeOrder"/>
+    </bean>
+
+    <!-- ============ 4. 通知器（Advisor = Pointcut + Advice） ============ -->
+    <bean id="advisorBefore" class="com.learn.springmini.aop.DefaultPointcutAdvisor">
+        <constructor-arg ref="pcCreateUser"/>
+        <constructor-arg ref="logBeforeAdvice"/>
+    </bean>
+    <bean id="advisorAroundUser" class="com.learn.springmini.aop.DefaultPointcutAdvisor">
+        <constructor-arg ref="pcStarUser"/>
+        <constructor-arg ref="logAroundAdvice"/>
+    </bean>
+    <bean id="advisorAfter" class="com.learn.springmini.aop.DefaultPointcutAdvisor">
+        <constructor-arg ref="pcCreateUser"/>
+        <constructor-arg ref="logAfterAdvice"/>
+    </bean>
+    <bean id="advisorThrows" class="com.learn.springmini.aop.DefaultPointcutAdvisor">
+        <constructor-arg ref="pcStarUser"/>
+        <constructor-arg ref="logThrowsAdvice"/>
+    </bean>
+    <bean id="advisorAroundOrder" class="com.learn.springmini.aop.DefaultPointcutAdvisor">
+        <constructor-arg ref="pcPlaceOrder"/>
+        <constructor-arg ref="logAroundAdvice"/>
+    </bean>
+
+    <!-- ============ 5. 自动代理器：把上面所有 Advisor 织入命中的 Bean ============ -->
+    <bean class="com.learn.springmini.aop.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+
+</beans>

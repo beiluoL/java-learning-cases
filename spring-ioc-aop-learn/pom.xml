@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.learn</groupId>
+    <artifactId>spring-ioc-aop-learn</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>Spring IoC &amp; AOP 手写学习项目</name>
+    <description>面向 Java 初学者的源码级 Spring IoC / AOP 手写学习案例（迷你 Spring）</description>
+
+    <properties>
+        <!-- 使用 Java 17 编译与运行 -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cglib.version>3.3.0</cglib.version>
+        <!-- exec 插件默认入口；可用 -Dexec.mainClass=... 覆盖，从而运行不同演示 -->
+        <exec.mainClass>com.learn.springmini.demo.MainApplication</exec.mainClass>
+    </properties>
+
+    <dependencies>
+        <!--
+            CGLIB：Spring AOP 在“目标对象没有实现接口”时使用的动态代理方案。
+            它基于 ASM 字节码技术在运行时生成目标类的子类（继承式代理）。
+            本项目用 cglib 演示“CGLIB 动态代理”机制，并在注释中讲解其底层原理。
+        -->
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>${cglib.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>spring-ioc-aop-learn</finalName>
+        <plugins>
+            <!-- 编译插件：明确使用 Java 17 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>17</release>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!--
+                exec 插件：方便在命令行直接运行演示入口类，例如：
+                  mvn compile exec:java -Dexec.mainClass=com.learn.springmini.demo.IoCDemo
+                  mvn compile exec:java -Dexec.mainClass=com.learn.springmini.demo.AopDemo
+                  mvn compile exec:java -Dexec.mainClass=com.learn.springmini.demo.MainApplication
+
+                说明：CGLIB 在 JDK 9+ 需要“打开”部分 JDK 内部包才能生成代理子类，
+                相关的 add-opens 参数已统一配置在项目根目录的 .mvn/jvm.config 中，
+                exec:java 运行在 Maven 同一 JVM 下即可直接生效，无需额外参数。
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>${exec.mainClass}</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

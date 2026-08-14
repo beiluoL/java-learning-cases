@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Milvus 向量数据库简明指南</title>
+</head>
+<body>
+  <h1>Milvus 向量数据库简明指南</h1>
+  <p>Milvus 是开源的高性能向量数据库，专为海量高维向量的存储、索引与检索而设计，广泛用于推荐系统、图像检索与 RAG（检索增强生成）场景。</p>
+
+  <h2>核心概念：集合与向量</h2>
+  <p>Milvus 中的“集合（Collection）”类似于关系数据库里的表，用于存放向量与标量字段。每条记录的核心是它的向量（embedding），由 Embedding 模型把文本或图片映射成固定维度的浮点数数组。</p>
+
+  <h2>相似度度量</h2>
+  <p>向量检索的本质是计算相似度。Milvus 支持余弦相似度（COSINE）、内积（IP）与欧氏距离（L2）等度量类型。对于归一化后的向量，余弦相似度等价于内积，召回效果稳定。</p>
+
+  <h2>索引类型</h2>
+  <p>为了加速近邻搜索，Milvus 提供 IVF_FLAT、HNSW、DiskANN 等多种索引。IVF_FLAT 精确但依赖聚类；HNSW 基于图结构，查询快、内存占用高；生产环境常按数据规模与延迟要求在准确率与成本之间权衡。</p>
+
+  <h2>与 Spring AI 集成</h2>
+  <p>在 Java 侧，Spring AI 的 MilvusVectorStore 封装了连接、建集合、插入与相似性搜索。它通过 gRPC 端口 19530 与 Milvus 服务通信，业务层只需调用 add() 与 similaritySearch() 即可完成 RAG 的写入与召回。</p>
+</body>
+</html>

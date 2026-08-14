@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: spring-ai-milvus-demo
+  # 允许上传较大的文档（默认 1MB 太小，RAG 摄取 PDF/Word 时容易超限）
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  ai:
+    vectorstore:
+      milvus:
+        # 连接 Milvus 服务（docker 中映射的端口 19530）
+        client:
+          host: localhost
+          port: 19530
+          username: ${MILVUS_USERNAME:root}
+          password: ${MILVUS_PASSWORD:milvus}
+        databaseName: default
+        # 集合（类似关系库的“表”）名称
+        collectionName: java_learning_docs
+        # 向量维度：必须和我们自定义的嵌入模型输出维度一致（见 LocalHashingEmbeddingModel）
+        embeddingDimension: 256
+        indexType: IVF_FLAT
+        metricType: COSINE
+        # 应用启动时自动创建集合（学习 demo 省去手动建表步骤；生产环境一般设为 false 由运维管理）
+        initialize-schema: true
+
+# 自定义配置：本地“教学用”嵌入模型的向量维度
+app:
+  embedding:
+    dimension: 256

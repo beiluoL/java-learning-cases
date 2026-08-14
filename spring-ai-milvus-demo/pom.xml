@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Spring Boot 父工程：统一管理依赖与插件版本 -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>spring-ai-milvus-demo</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>spring-ai-milvus-demo</name>
+    <description>Spring AI + Milvus 学习示例（Java 17 / Spring Boot 3.4）</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <!-- Spring AI 1.0.0 GA（2025-05 发布），与 Spring Boot 3.4 / 3.5 兼容 -->
+        <spring-ai.version>1.0.0</spring-ai.version>
+    </properties>
+
+    <!-- 引入 Spring AI 的 BOM：让所有 spring-ai-* 依赖不用写版本号 -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Apache Tika 的 BOM：统一管理所有 tika-* 模块版本（当前稳定版 3.3.2） -->
+            <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-bom</artifactId>
+                <version>3.3.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Web 起步依赖：提供 REST 接口，方便用浏览器/Postman 体验 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- ★ 核心：Spring AI 的 Milvus 向量库起步依赖。
+             它会自动装配一个 MilvusVectorStore（实现了统一的 VectorStore 接口）。
+             只要你提供一个 EmbeddingModel Bean，开箱即用。 -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-vector-store-milvus</artifactId>
+        </dependency>
+
+        <!-- ★ 文档摄取：Apache Tika，把 PDF/DOCX/HTML/Markdown 等 1000+ 格式统一解析为文本与元数据 -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+        </dependency>
+        <!-- standard-package 打包了常用解析器（PDF/Word/Excel/PPT/HTML/XML 等），不含 OCR -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers-standard-package</artifactId>
+        </dependency>
+
+        <!-- 测试起步依赖（方便你后续写集成测试） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

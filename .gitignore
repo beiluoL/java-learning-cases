@@ -1,0 +1,37 @@
+# ===== OS / 编辑器 / 智能体编程残留 =====
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/
+.workbuddy/
+
+# ===== Java / Maven 构建产物 =====
+target/
+*.class
+*.jar
+!**/src/**/*.jar
+
+# ===== 前端 / Node 依赖与构建产物 =====
+node_modules/
+dist/
+.output/
+.nuxt/
+.cache/
+*.tsbuildinfo
+
+# ===== Docker 运行数据（保留 compose 编排文件）=====
+docker/volumes/
+**/volumes/
+
+# ===== 日志 =====
+*.log
+
+# ===== 密钥 / 环境变量（本仓库统一用环境变量占位，禁止提交真实密钥）=====
+.env
+.env.*
+*.local
+
+# ===== 运行时生成的上传 / 索引目录 =====
+uploads/
+**/uploads/

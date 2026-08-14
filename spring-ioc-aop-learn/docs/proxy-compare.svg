@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 420" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <style>
+      .title { fill:#1677ff; font-size:18px; font-weight:700; }
+      .h { fill:#fff; font-size:14px; font-weight:700; }
+      .t { fill:#3a3f47; font-size:12.5px; }
+      .th { fill:#1677ff; }
+      .th2 { fill:#722ed1; }
+      .jdk { fill:#EAF2FB; stroke:#1677ff; stroke-width:1.2; }
+      .cglib { fill:#F9F0FF; stroke:#722ed1; stroke-width:1.2; }
+    </style>
+  </defs>
+
+  <text x="340" y="30" text-anchor="middle" class="title">JDK 动态代理 vs CGLIB 动态代理</text>
+
+  <!-- table header -->
+  <rect x="40" y="55" width="160" height="40" fill="#f0f0f0" stroke="#bbb"/>
+  <text x="120" y="80" text-anchor="middle" class="h" fill="#1f2329">对比维度</text>
+  <rect x="200" y="55" width="220" height="40" class="th"/>
+  <text x="310" y="80" text-anchor="middle" class="h">JDK 动态代理</text>
+  <rect x="420" y="55" width="220" height="40" class="th2"/>
+  <text x="530" y="80" text-anchor="middle" class="h">CGLIB 动态代理</text>
+
+  <!-- rows -->
+  <g>
+    <rect x="40" y="95" width="160" height="40" fill="#fafafa" stroke="#bbb"/>
+    <text x="120" y="119" text-anchor="middle" class="t">底层机制</text>
+    <rect x="200" y="95" width="220" height="40" class="jdk"/>
+    <text x="310" y="113" text-anchor="middle" class="t">反射 + 接口代理</text>
+    <text x="310" y="129" text-anchor="middle" class="t">java.lang.reflect.Proxy</text>
+    <rect x="420" y="95" width="220" height="40" class="cglib"/>
+    <text x="530" y="113" text-anchor="middle" class="t">字节码生成子类</text>
+    <text x="530" y="129" text-anchor="middle" class="t">ASM + Enhancer</text>
+  </g>
+
+  <g>
+    <rect x="40" y="135" width="160" height="40" fill="#fafafa" stroke="#bbb"/>
+    <text x="120" y="159" text-anchor="middle" class="t">对接口要求</text>
+    <rect x="200" y="135" width="220" height="40" class="jdk"/>
+    <text x="310" y="159" text-anchor="middle" class="t">必须实现接口</text>
+    <rect x="420" y="135" width="220" height="40" class="cglib"/>
+    <text x="530" y="159" text-anchor="middle" class="t">不需要接口</text>
+  </g>
+
+  <g>
+    <rect x="40" y="175" width="160" height="40" fill="#fafafa" stroke="#bbb"/>
+    <text x="120" y="199" text-anchor="middle" class="t">代理类关系</text>
+    <rect x="200" y="175" width="220" height="40" class="jdk"/>
+    <text x="310" y="199" text-anchor="middle" class="t">实现相同接口</text>
+    <rect x="420" y="175" width="220" height="40" class="cglib"/>
+    <text x="530" y="199" text-anchor="middle" class="t">继承目标类（子类）</text>
+  </g>
+
+  <g>
+    <rect x="40" y="215" width="160" height="40" fill="#fafafa" stroke="#bbb"/>
+    <text x="120" y="239" text-anchor="middle" class="t">速度</text>
+    <rect x="200" y="215" width="220" height="40" class="jdk"/>
+    <text x="310" y="239" text-anchor="middle" class="t">生成快，调用略慢</text>
+    <rect x="420" y="215" width="220" height="40" class="cglib"/>
+    <text x="530" y="239" text-anchor="middle" class="t">生成慢，调用更快</text>
+  </g>
+
+  <g>
+    <rect x="40" y="255" width="160" height="42" fill="#fafafa" stroke="#bbb"/>
+    <text x="120" y="280" text-anchor="middle" class="t">限制</text>
+    <rect x="200" y="255" width="220" height="42" class="jdk"/>
+    <text x="310" y="274" text-anchor="middle" class="t">只能代理 public 接口方法</text>
+    <text x="310" y="290" text-anchor="middle" class="t">final 类/方法不可代理</text>
+    <rect x="420" y="255" width="220" height="42" class="cglib"/>
+    <text x="530" y="274" text-anchor="middle" class="t">目标类/final 方法不可代理</text>
+    <text x="530" y="290" text-anchor="middle" class="t">JDK 9+ 需 --add-opens</text>
+  </g>
+
+  <g>
+    <rect x="40" y="297" width="160" height="40" fill="#fafafa" stroke="#bbb"/>
+    <text x="120" y="321" text-anchor="middle" class="t">本项目触发条件</text>
+    <rect x="200" y="297" width="220" height="40" class="jdk"/>
+    <text x="310" y="321" text-anchor="middle" class="t">userService（有接口）</text>
+    <rect x="420" y="297" width="220" height="40" class="cglib"/>
+    <text x="530" y="321" text-anchor="middle" class="t">orderService（无接口）</text>
+  </g>
+
+  <text x="340" y="370" text-anchor="middle" class="t">Spring 默认：目标有接口用 JDK，无接口用 CGLIB（可通过 proxyTargetClass 强制 CGLIB）</text>
+</svg>

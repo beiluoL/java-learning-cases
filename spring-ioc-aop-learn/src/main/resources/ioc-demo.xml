@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ioc-demo.xml —— 纯 IoC 演示配置
+  目的：集中展示“构造器注入”与“Setter 注入”两种依赖注入方式，不涉及 AOP。
+
+  阅读顺序：
+    1) userDao：无依赖、无配置的最简 Bean。
+    2) userService：
+       - <constructor-arg index="0" ref="userDao"/>  → 构造器注入（注入必需依赖）
+       - <property name="appName" value="..."/>       → Setter 注入（注入配置项）
+-->
+<beans>
+
+    <!-- 数据访问层 Bean：最简单的无参构造 Bean -->
+    <bean id="userDao" class="com.learn.springmini.demo.dao.UserDaoImpl"/>
+
+    <!-- 业务层 Bean：同时演示构造器注入与 Setter 注入 -->
+    <bean id="userService" class="com.learn.springmini.demo.service.UserServiceImpl">
+        <!-- 构造器注入：把 userDao 这个 Bean 作为构造参数传进去 -->
+        <constructor-arg index="0" ref="userDao"/>
+        <!-- Setter 注入：调用 setAppName("Mini-Spring-IOC") -->
+        <property name="appName" value="Mini-Spring-IOC"/>
+    </bean>
+
+</beans>

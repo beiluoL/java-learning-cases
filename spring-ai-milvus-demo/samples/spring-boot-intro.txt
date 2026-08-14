@@ -1,0 +1,11 @@
+Spring Boot 入门笔记
+
+Spring Boot 是 Spring 生态中用于快速搭建生产级应用的框架。它通过“起步依赖（starter）”和“自动配置（auto-configuration）”极大地降低了项目搭建成本。开发者不再需要手动编写大量 XML 或 Java Config，只要引入对应的 starter，框架就会根据 classpath 上的依赖自动装配好 Bean。
+
+核心特性一：自动配置。Spring Boot 在启动时会扫描 classpath，结合 @Conditional 系列注解，按需把 DataSource、WebMvc、事务管理器等组件装配进容器。这样我们引入 spring-boot-starter-web 就能直接拿到一个内嵌 Tomcat 和 DispatcherServlet。
+
+核心特性二：起步依赖。starter 本质是一组经过兼容性测试的依赖集合。例如 spring-boot-starter-data-jpa 一次性引入了 Hibernate、Spring Data 与连接池，避免版本冲突。
+
+核心特性三：内嵌容器与生产就绪。Spring Boot 默认内嵌 Tomcat、Jetty 或 Undertow，应用打包成可执行 jar 后 java -jar 即可运行；配合 Actuator 还能暴露健康检查、指标等运维端点。
+
+与 Spring AI 的关系：Spring AI 提供了统一的 VectorStore 抽象，让我们可以把文档向量存入 Milvus、PGVector 等不同的向量数据库。结合 Spring Boot 的自动配置，只需在 application.yml 写好连接信息，VectorStore 的 Bean 就自动可用，业务代码完全不感知底层数据库差异。
