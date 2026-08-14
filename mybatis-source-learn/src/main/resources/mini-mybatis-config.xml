@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  mini-mybatis-config.xml —— 全局配置总入口
+  对应真实 MyBatis 的 mybatis-config.xml。这里刻意不用 DTD/XSD 校验，拿到什么节点就解析什么，
+  方便初学者看清 "XML 标签 -> Java 对象" 的映射。
+
+  各节点作用：
+    settings         全局开关（二级缓存、下划线转驼峰、SQL 日志）
+    typeAliases       给实体类起短别名（XML 里 resultType="User" 即可）
+    plugins           拦截器（本例是慢 SQL 耗时统计）
+    environments     事务工厂 + 数据源（这里用 H2 内存库，纯内存、无需装数据库）
+    mappers           注册 SQL（XML 的 resource，或注解的 class）
+-->
+<configuration>
+
+    <settings>
+        <!-- 开启二级缓存（CachingExecutor 才会生效） -->
+        <setting name="cacheEnabled" value="true"/>
+        <!-- 下划线字段自动映射到驼峰属性：user_name -> userName -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- 打印 SQL 三段式日志：Preparing / Parameters / Total -->
+        <setting name="logSqlEnabled" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <typeAlias alias="User" type="com.learn.mybatismini.demo.entity.User"/>
+        <typeAlias alias="Order" type="com.learn.mybatismini.demo.entity.Order"/>
+    </typeAliases>
+
+    <plugins>
+        <!-- 自定义插件：SQL 耗时统计（演示 MyBatis 插件机制 / 责任链代理） -->
+        <plugin interceptor="com.learn.mybatismini.demo.plugin.SqlCostTimeInterceptor">
+            <property name="slowSqlMillis" value="10"/>
+        </plugin>
+    </plugins>
+
+    <environments default="development">
+        <environment id="development">
+            <!-- JDBC 事务：直接用 Connection 的 commit/rollback -->
+            <transactionManager type="JDBC"/>
+            <!-- POOLED 数据源：内置简易连接池（生产换成 Druid/Hikari 也是这个接口） -->
+            <dataSource type="POOLED">
+                <property name="driver" value="org.h2.Driver"/>
+                <!--
+                  H2 内存库，MODE=MySQL 让语法尽量贴近 MySQL；
+                  DB_CLOSE_DELAY=-1 保证内存库在连接归还后也不丢失（Demo 跨会话需要）
+                -->
+                <property name="url" value="jdbc:h2:mem:mybatis_mini;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"/>
+                <property name="username" value="sa"/>
+                <property name="password" value=""/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <!-- XML 方式：namespace 对应下面的 Mapper 接口 -->
+        <mapper resource="mapper/UserMapper.xml"/>
+        <mapper resource="mapper/OrderMapper.xml"/>
+        <!-- 注解方式：直接指向接口类 -->
+        <mapper class="com.learn.mybatismini.demo.mapper.UserAnnoMapper"/>
+    </mappers>
+
+</configuration>

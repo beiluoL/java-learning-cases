@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OrderMapper.xml —— 订单表的 SQL 映射。
+  注意顶部 <cache/>：它让本 namespace 下的查询启用二级缓存（跨 SqlSession 共享）。
+  演示二级缓存时用的就是这个 Mapper。
+-->
+<mapper namespace="com.learn.mybatismini.demo.mapper.OrderMapper">
+
+    <!-- 二级缓存：LRU 淘汰策略，最多缓存 1024 个条目 -->
+    <cache eviction="LRU" size="1024"/>
+
+    <select id="selectAll" resultType="Order">
+        SELECT id, user_id, order_no, amount, status FROM t_order ORDER BY id
+    </select>
+
+    <select id="selectByUserId" resultType="Order">
+        SELECT id, user_id, order_no, amount, status FROM t_order WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectByStatus" resultType="Order">
+        SELECT id, user_id, order_no, amount, status FROM t_order WHERE status = #{status}
+    </select>
+
+</mapper>

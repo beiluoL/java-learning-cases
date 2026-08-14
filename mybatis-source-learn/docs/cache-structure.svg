@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 660" font-family="-apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <style>
+    .title { fill:#1f1f1f; font-size:15px; font-weight:700; }
+    .panel { fill:#fafafa; stroke:#d9d9d9; stroke-width:1.5; }
+    .t     { fill:#1f1f1f; font-size:13px; font-weight:600; }
+    .s     { fill:#555; font-size:11px; }
+    .l2box { fill:#fff7e6; stroke:#fa8c16; stroke-width:1.5; }
+    .l1box { fill:#f9f0ff; stroke:#722ed1; stroke-width:1.5; }
+    .core  { fill:#e6f4ff; stroke:#1677ff; stroke-width:1.5; }
+    .ln    { stroke:#bfbfbf; stroke-width:1.5; fill:none; }
+    .arr   { stroke:#1677ff; stroke-width:2; fill:none; }
+    .cap   { fill:#888; font-size:12px; }
+    .tag   { fill:#fa8c16; font-size:12px; font-weight:700; }
+    .tagp  { fill:#722ed1; font-size:12px; font-weight:700; }
+  </style>
+
+  <text x="390" y="30" text-anchor="middle" class="title">两级缓存结构：装饰器叠加 + 作用域隔离</text>
+
+  <!-- 左：二级缓存 -->
+  <rect class="panel" x="40" y="56" width="320" height="430" rx="10"/>
+  <text x="200" y="82" text-anchor="middle" class="tag">二级缓存 L2（跨 SqlSession，namespace 级）</text>
+
+  <rect class="l2box" x="80"  y="100" width="240" height="44" rx="8"/>
+  <text x="200" y="122" text-anchor="middle" class="t">TransactionalCache</text>
+  <text x="200" y="138" text-anchor="middle" class="s">写缓冲：commit 才刷入，rollback 丢弃</text>
+
+  <rect class="l2box" x="80" y="158" width="240" height="38" rx="8"/>
+  <text x="200" y="181" text-anchor="middle" class="s" font-weight="600">SynchronizedCache（并发安全）</text>
+
+  <rect class="l2box" x="80" y="206" width="240" height="38" rx="8"/>
+  <text x="200" y="229" text-anchor="middle" class="s" font-weight="600">LoggingCache（命中率统计）</text>
+
+  <rect class="l2box" x="80" y="254" width="240" height="38" rx="8"/>
+  <text x="200" y="277" text-anchor="middle" class="s" font-weight="600">SerializedCache（序列化）</text>
+
+  <rect class="l2box" x="80" y="302" width="240" height="38" rx="8"/>
+  <text x="200" y="325" text-anchor="middle" class="s" font-weight="600">LruCache（LRU 淘汰, size=1024）</text>
+
+  <rect class="core"  x="80" y="350" width="240" height="44" rx="8"/>
+  <text x="200" y="372" text-anchor="middle" class="t">PerpetualCache</text>
+  <text x="200" y="388" text-anchor="middle" class="s">真存储：HashMap&lt;CacheKey, value&gt;</text>
+
+  <text x="200" y="466" text-anchor="middle" class="s">外层包裹内层 = 装饰器模式（叠 BUFF）</text>
+
+  <!-- 左面板箭头（包裹方向） -->
+  <line class="ln" x1="200" y1="144" x2="200" y2="156"/>
+  <line class="ln" x1="200" y1="196" x2="200" y2="204"/>
+  <line class="ln" x1="200" y1="244" x2="200" y2="252"/>
+  <line class="ln" x1="200" y1="292" x2="200" y2="300"/>
+  <line class="ln" x1="200" y1="340" x2="200" y2="348"/>
+
+  <!-- 右：一级缓存 -->
+  <rect class="panel" x="420" y="56" width="320" height="430" rx="10"/>
+  <text x="580" y="82" text-anchor="middle" class="tagp">一级缓存 L1（会话内，SqlSession 级）</text>
+
+  <rect class="l1box" x="460" y="140" width="240" height="44" rx="8"/>
+  <text x="580" y="162" text-anchor="middle" class="t">BaseExecutor.localCache</text>
+  <text x="580" y="178" text-anchor="middle" class="s">每个 SqlSession 独占一份</text>
+
+  <rect class="core"  x="460" y="220" width="240" height="44" rx="8"/>
+  <text x="580" y="242" text-anchor="middle" class="t">PerpetualCache</text>
+  <text x="580" y="258" text-anchor="middle" class="s">HashMap&lt;CacheKey, List&gt;</text>
+
+  <rect class="l1box" x="460" y="320" width="240" height="64" rx="8"/>
+  <text x="580" y="344" text-anchor="middle" class="s" font-weight="600">CacheKey 构成（5 要素）</text>
+  <text x="580" y="362" text-anchor="middle" class="s">statementId + offset + limit</text>
+  <text x="580" y="378" text-anchor="middle" class="s">+ SQL + 每个参数值</text>
+
+  <line class="ln" x1="580" y1="184" x2="580" y2="218"/>
+
+  <!-- 查询顺序 -->
+  <rect class="panel" x="180" y="510" width="420" height="100" rx="10"/>
+  <text x="390" y="538" text-anchor="middle" class="t">一次查询的缓存查找顺序</text>
+  <rect class="l2box" x="200" y="552" width="120" height="40" rx="8"/>
+  <text x="260" y="576" text-anchor="middle" class="s" font-weight="600">① L2 命中?</text>
+  <rect class="l1box" x="330" y="552" width="120" height="40" rx="8"/>
+  <text x="390" y="576" text-anchor="middle" class="s" font-weight="600">② L1 命中?</text>
+  <rect class="core"  x="460" y="552" width="120" height="40" rx="8"/>
+  <text x="520" y="576" text-anchor="middle" class="s" font-weight="600">③ 查数据库</text>
+  <line class="arr" x1="320" y1="572" x2="328" y2="572"/>
+  <line class="arr" x1="450" y1="572" x2="458" y2="572"/>
+  <text x="390" y="600" text-anchor="middle" class="s">命中即短路返回；未命中查库后回写 L1，commit 后刷入 L2</text>
+
+  <text x="390" y="640" text-anchor="middle" class="cap">L1 随 SqlSession 生灭；L2 进程级常驻，靠 TransactionalCache 保证“提交才可见”</text>
+</svg>

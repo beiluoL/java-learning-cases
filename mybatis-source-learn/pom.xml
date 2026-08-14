@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.learn</groupId>
+    <artifactId>mybatis-source-learn</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>MyBatis 源码手写学习项目（迷你 MyBatis）</name>
+    <description>面向 Java 初学者的源码级 MyBatis 手写学习案例：逐层实现 SqlSession / Configuration / Executor /
+        Mapper 动态代理 / 反射与注解解析 / 一级二级缓存 / 插件机制，完整还原一次 SQL 执行的生命周期
+    </description>
+
+    <properties>
+        <!-- 使用 Java 17 编译与运行 -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <h2.version>2.2.224</h2.version>
+    </properties>
+
+    <dependencies>
+        <!--
+            H2 内存数据库：本项目唯一的第三方依赖。
+            为什么选它？
+              1. 纯内存运行，无需安装 MySQL，克隆下来 `mvn compile exec:java` 即可跑通；
+              2. 完整支持 JDBC 规范（Connection / PreparedStatement / ResultSet / getGeneratedKeys），
+                 因此我们手写的"迷你 MyBatis"跟操作真实数据库的代码路径完全一致；
+              3. 换成 MySQL 只需改 resources/mini-mybatis-config.xml 里的 url/driver，代码零改动
+                 —— 这本身就是 MyBatis "面向 JDBC 接口编程"带来的好处。
+
+            注意：除此之外我们不引入 mybatis / spring / slf4j / dom4j / ognl 任何依赖。
+            XML 解析用 JDK 自带的 javax.xml（DOM），日志用自己写的 MiniLog，
+            表达式求值用自己写的 ExpressionEvaluator —— 全部亲手实现，才能看清原理。
+        -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>mybatis-source-learn</finalName>
+        <plugins>
+            <!-- 编译插件：明确使用 Java 17 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>17</release>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <!--
+                            -parameters：把方法的形参名写进 class 文件。
+                            MyBatis 的 ParamNameResolver 正是靠它在没写 @Param 时也能拿到参数名
+                            （否则反射只能拿到 arg0 / arg1）。这是一个非常容易被忽略的编译期细节。
+                        -->
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!--
+                exec 插件：方便在命令行直接运行演示入口类，例如：
+                  mvn -q compile exec:java                                    # 跑总入口（全部阶段）
+                  mvn -q compile exec:java -Dexec.mainClass=com.learn.mybatismini.demo.step.Step01_RawJdbcPain
+                  mvn -q compile exec:java -Dexec.mainClass=com.learn.mybatismini.demo.step.Step07_FirstLevelCache
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.learn.mybatismini.demo.MainApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

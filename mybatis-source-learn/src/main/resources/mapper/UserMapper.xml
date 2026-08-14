@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  UserMapper.xml —— 用户表的 SQL 映射。
+  namespace 必须与 com.learn.mybatismini.demo.mapper.UserMapper 接口全限定名一致，
+  这样 XML 里的 id 才能绑定到接口方法。
+-->
+<mapper namespace="com.learn.mybatismini.demo.mapper.UserMapper">
+
+    <!-- 可复用的列片段，用 <include refid> 引用（避免重复书写） -->
+    <sql id="Base_Column_List">
+        id, user_name, age, email, create_time
+    </sql>
+
+    <!-- 基础查询：#{id} 会被替换成 ? 并由 TypeHandler 安全设参（防注入） -->
+    <select id="selectById" resultType="User">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_user WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="User">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_user ORDER BY id
+    </select>
+
+    <!-- 动态 SQL：<where> 自动处理前缀 AND/OR，<if> 按条件拼接 -->
+    <select id="selectByCondition" resultType="User">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_user
+        <where>
+            <if test="userName != null and userName != ''">
+                AND user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="age != null">
+                AND age = #{age}
+            </if>
+            <if test="emailLike != null and emailLike != ''">
+                AND email LIKE CONCAT('%', #{emailLike}, '%')
+            </if>
+        </where>
+        ORDER BY id
+    </select>
+
+    <!-- foreach：把 List 展开成 IN (?, ?, ?)，每个元素绑定成临时参数 __frch_id_i -->
+    <select id="selectByIds" resultType="User">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_user
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- choose / when / otherwise：类似 Java 的 switch -->
+    <select id="selectByChoose" resultType="User">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_user
+        <where>
+            <choose>
+                <when test="userName != null and userName != ''">
+                    AND user_name LIKE CONCAT('%', #{userName}, '%')
+                </when>
+                <otherwise>
+                    AND email = #{email}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!-- 插入并回填自增主键：useGeneratedKeys + keyProperty -->
+    <insert id="insertUser" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_user (user_name, age, email, create_time)
+        VALUES (#{userName}, #{age}, #{email}, #{createTime})
+    </insert>
+
+    <!-- 动态 set：只更新非 null 的字段（注意每个 if 末尾都要带逗号，<set> 会统一去掉多余逗号） -->
+    <update id="updateUserSelective" parameterType="User">
+        UPDATE t_user
+        <set>
+            <if test="userName != null">user_name = #{userName},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="email != null">email = #{email},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM t_user WHERE id = #{id}
+    </delete>
+
+    <!-- 多参计数：@Param("min") / @Param("max") 让 #{min} #{max} 能取到 -->
+    <select id="countByAge" resultType="int">
+        SELECT COUNT(*) FROM t_user WHERE age BETWEEN #{min} AND #{max}
+    </select>
+
+    <!-- ${order}：字符串直接拼接（非预编译）！仅演示原理，真实业务切勿直接拼用户输入 -->
+    <select id="selectByOrder" resultType="User">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_user WHERE id = #{id} ORDER BY ${order}
+    </select>
+
+</mapper>
