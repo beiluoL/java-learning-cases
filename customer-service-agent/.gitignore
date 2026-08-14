@@ -1,0 +1,15 @@
+# Build / deps
+backend/target/
+backend/data/
+frontend/node_modules/
+frontend/dist/
+agent-bridge/node_modules/
+agent-bridge/.env
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store

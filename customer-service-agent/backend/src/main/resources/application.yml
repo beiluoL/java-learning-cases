@@ -1,0 +1,45 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: customer-service-agent
+  datasource:
+    url: jdbc:h2:file:./data/csagent;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# 自定义业务配置
+app:
+  # 是否启用 CodeBuddy 桥接（Node 服务）。设为 true 且桥接可达时，Agent 回复由 CodeBuddy 大模型生成；
+  # 否则使用本地规则引擎（意图识别 + FAQ 检索 + 模板）兜底，保证离线可用。
+  codebuddy:
+    enabled: false
+    base-url: http://localhost:3001
+    # 检索阈值：FAQ 最高分低于该值视为未命中，触发转人工/兜底
+    # （当前打分模型中，单个关键词重合约 +3，2-gram 重合约 +1）
+    faq-score-threshold: 2.0
+    # 意图识别置信度阈值
+    intent-confidence-threshold: 0.35
+  cors:
+    allowed-origins: "http://localhost:5173,http://localhost:4173"
+
+logging:
+  level:
+    com.example.csagent: INFO
+    org.springframework.web: INFO
