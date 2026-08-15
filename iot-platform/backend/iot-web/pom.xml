@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.iot.bigdata</groupId>
+        <artifactId>iot-platform</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>iot-web</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>iot-web</name>
+    <description>接口层：REST 控制器、WebSocket 实时推送、主启动类</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.iot.bigdata</groupId>
+            <artifactId>iot-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.iot.bigdata</groupId>
+            <artifactId>iot-mqtt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.iot.bigdata</groupId>
+            <artifactId>iot-collector</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.iot.bigdata</groupId>
+            <artifactId>iot-analysis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.iot.bigdata</groupId>
+            <artifactId>iot-opinion</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.iot.bigdata</groupId>
+            <artifactId>iot-visualization</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.iot.bigdata.web.IotPlatformApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

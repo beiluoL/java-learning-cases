@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.12</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.iot.bigdata</groupId>
+    <artifactId>iot-platform</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>iot-platform</name>
+    <description>企业级物联网(IoT)与大数据场景学习项目 - 多模块聚合工程</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <paho.version>1.2.5</paho.version>
+        <moquette.version>0.17</moquette.version>
+        <hutool.version>5.8.27</hutool.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+    </properties>
+
+    <!--
+        模块职责说明（分层 + 模块化设计）：
+        iot-common        公共层：统一响应、异常、常量、工具类、基础实体
+        iot-mqtt          设备通信层：内嵌 MQTT Broker + 订阅客户端 + 消息路由
+        iot-collector     数据采集层：设备/数据点建模、持久化、采集服务
+        iot-analysis      实时分析层：窗口聚合、统计、异常检测、告警
+        iot-opinion       舆情监控层：舆情采集、情感分析、热点话题
+        iot-visualization 可视化聚合层：面向前端图表的聚合查询
+        iot-web           接口层：REST 控制器、WebSocket 实时推送、主启动类
+    -->
+    <modules>
+        <module>iot-common</module>
+        <module>iot-mqtt</module>
+        <module>iot-collector</module>
+        <module>iot-analysis</module>
+        <module>iot-opinion</module>
+        <module>iot-visualization</module>
+        <module>iot-web</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 内部模块依赖版本统一管理 -->
+            <dependency>
+                <groupId>com.iot.bigdata</groupId>
+                <artifactId>iot-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.iot.bigdata</groupId>
+                <artifactId>iot-mqtt</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.iot.bigdata</groupId>
+                <artifactId>iot-collector</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.iot.bigdata</groupId>
+                <artifactId>iot-analysis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.iot.bigdata</groupId>
+                <artifactId>iot-opinion</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.iot.bigdata</groupId>
+                <artifactId>iot-visualization</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- 三方组件版本锁定 -->
+            <dependency>
+                <groupId>org.eclipse.paho</groupId>
+                <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+                <version>${paho.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.moquette</groupId>
+                <artifactId>moquette-broker</artifactId>
+                <version>${moquette.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

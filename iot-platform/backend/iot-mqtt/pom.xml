@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.iot.bigdata</groupId>
+        <artifactId>iot-platform</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>iot-mqtt</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>iot-mqtt</name>
+    <description>设备通信层：内嵌 MQTT Broker + 订阅客户端 + 消息路由</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.iot.bigdata</groupId>
+            <artifactId>iot-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.moquette</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <exclusions>
+                <!-- 排除旧版 h2-mvstore(2.1.212)，避免与 h2:2.2.224 的 org.h2.util.Utils 产生分裂类冲突；
+                     h2:2.2.224 已内置完整 mvstore 实现，moquette 内存存储无需独立 jar -->
+                <exclusion>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2-mvstore</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>
