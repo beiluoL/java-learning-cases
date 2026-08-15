@@ -1,0 +1,32 @@
+# ============================================================================
+#  profile: h2  —— 开箱即跑环境（默认）
+#  H2 以 MySQL 兼容模式运行，内存库，进程退出即销毁；每次启动自动重建表 + 灌初始数据。
+#  H2 控制台：http://localhost:8090/h2-console
+#      JDBC URL = jdbc:h2:mem:erpcrm   用户名 = sa   密码留空
+# ============================================================================
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    # MODE=MySQL              以 MySQL 语法兼容模式运行
+    # DATABASE_TO_LOWER=TRUE  标识符转小写，与 MySQL 表名风格一致
+    # DB_CLOSE_DELAY=-1       JVM 存活期间保持内存库不销毁
+    url: jdbc:h2:mem:erpcrm;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ''
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+      schema-locations: classpath:db/h2/schema-h2.sql
+      data-locations: classpath:db/h2/data-h2.sql
+      continue-on-error: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false

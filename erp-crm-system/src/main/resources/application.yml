@@ -1,0 +1,126 @@
+# ============================================================================
+#  erp-crm-system 主配置
+#  ---------------------------------------------------------------------------
+#  数据库通过 profile 切换：
+#    h2    —— 默认。H2 内存库 + MySQL 兼容模式，克隆即跑，无需安装数据库。
+#    mysql —— 生产形态。需先执行 src/main/resources/db/mysql/schema.sql。
+#  切换方式：修改下方 spring.profiles.active，或启动参数 --spring.profiles.active=mysql
+# ============================================================================
+server:
+  # 默认 8090：避开本机常见的 8080 / 8081 占用；可用 --server.port=xxxx 覆盖
+  port: 8090
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      force: true
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 200
+      min-spare: 20
+
+spring:
+  application:
+    name: erp-crm-system
+  profiles:
+    active: h2
+  jackson:
+    # 全局日期序列化格式，避免各处 @JsonFormat 重复声明
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+  servlet:
+    multipart:
+      # Excel 导入文件大小限制
+      max-file-size: 20MB
+      max-request-size: 30MB
+  mvc:
+    throw-exception-if-no-handler-found: false
+  cache:
+    # 本地缓存：权限集合、字典数据。生产可替换 type: redis（详见 docs/二次开发指南.md）
+    type: caffeine
+    caffeine:
+      spec: maximumSize=5000,expireAfterWrite=30m
+
+# ============================== MyBatis-Plus ==============================
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.enterprise.erpcrm.module.**.entity
+  configuration:
+    # 下划线转驼峰：数据库 create_time -> 实体 createTime
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      table-underline: true
+      # 全局逻辑删除：查询自动追加 deleted = 0，删除自动改为 UPDATE deleted = 1
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# ============================== 接口文档 ==============================
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  default-flat-param-object: true
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    enable-footer: false
+    enable-open-api: false
+    swagger-model-name: 数据模型
+
+# ============================== 业务自定义配置 ==============================
+erp:
+  # JWT 无状态认证配置（生产环境务必用环境变量 ERP_JWT_SECRET 覆盖）
+  jwt:
+    secret: ${ERP_JWT_SECRET:ZXJwLWNybS1zeXN0ZW0tZGVmYXVsdC1qd3Qtc2VjcmV0LWtleS1mb3ItZGVtby1vbmx5LTIwMjY=}
+    # Token 有效期（分钟），默认 12 小时
+    expire-minutes: 720
+    header: Authorization
+    token-prefix: 'Bearer '
+  security:
+    # 免认证白名单（Ant 风格），支持 * 与 **
+    ignore-urls:
+      - /api/auth/login
+      - /api/auth/captcha
+      - /doc.html
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /v3/api-docs/**
+      - /webjars/**
+      - /favicon.ico
+      - /h2-console/**
+      - /error
+    # 超级管理员角色标识：拥有全部功能权限与全部数据权限
+    super-admin-role: SUPER_ADMIN
+  workflow:
+    # 审批流：审批人为空时是否自动通过该节点（避免流程卡死）
+    auto-pass-on-empty-approver: true
+  excel:
+    # 导入单次最大行数保护
+    max-import-rows: 10000
+
+logging:
+  level:
+    root: INFO
+    com.enterprise.erpcrm: DEBUG
+    org.springframework.jdbc.datasource.init: WARN
+  pattern:
+    console: '%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n'

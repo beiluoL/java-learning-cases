@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.enterprise.erpcrm.module.system.mapper.SysUserMapper">
+
+    <sql id="Base_Column_List">
+        u.id, u.username, u.password, u.real_name, u.nick_name, u.avatar, u.email,
+        u.phone, u.gender, u.dept_id, u.post_id, u.user_type, u.status, u.login_ip,
+        u.login_time, u.remark, u.create_by, u.create_time, u.update_by, u.update_time, u.deleted,
+        d.dept_name AS dept_name
+    </sql>
+
+    <select id="selectUserPage" resultType="com.enterprise.erpcrm.module.system.entity.SysUser">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_user u
+        LEFT JOIN sys_dept d ON u.dept_id = d.id AND d.deleted = 0
+        <where>
+            <if test="q.username != null and q.username != ''">
+                AND u.username LIKE CONCAT('%', #{q.username}, '%')
+            </if>
+            <if test="q.realName != null and q.realName != ''">
+                AND u.real_name LIKE CONCAT('%', #{q.realName}, '%')
+            </if>
+            <if test="q.phone != null and q.phone != ''">
+                AND u.phone LIKE CONCAT('%', #{q.phone}, '%')
+            </if>
+            <if test="q.status != null">
+                AND u.status = #{q.status}
+            </if>
+            <if test="q.deptId != null">
+                AND u.dept_id = #{q.deptId}
+            </if>
+            <!-- 数据权限片段：来自 DataScopeAspect -->
+            <if test="dataScope != null and dataScope != ''">
+                ${dataScope}
+            </if>
+        </where>
+        ORDER BY u.id ASC
+    </select>
+
+</mapper>

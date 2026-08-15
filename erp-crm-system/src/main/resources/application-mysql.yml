@@ -1,0 +1,26 @@
+# ============================================================================
+#  profile: mysql —— 生产形态环境
+#  前置步骤：
+#    1. mysql -uroot -p < src/main/resources/db/mysql/schema.sql
+#    2. mysql -uroot -p < src/main/resources/db/mysql/data.sql
+#    3. 账号密码通过环境变量注入：MYSQL_USERNAME / MYSQL_PASSWORD（不入库）
+#  启动：mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+# ============================================================================
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:erp_crm}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&allowMultiQueries=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123456}
+    hikari:
+      # 连接池按「核心数 * 2 + 有效磁盘数」经验值配置
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  sql:
+    init:
+      # MySQL 环境下不自动执行脚本，避免误覆盖生产数据
+      mode: never
