@@ -1,0 +1,51 @@
+23:21:40.214 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Creating new transaction with name [com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+23:21:40.214 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Acquired Connection [HikariProxyConnection@513802363 wrapping conn0: url=jdbc:h2:mem:txlab user=SA] for JDBC transaction
+23:21:40.214 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Switching JDBC Connection [HikariProxyConnection@513802363 wrapping conn0: url=jdbc:h2:mem:txlab user=SA] to manual commit
+23:21:40.214 TRACE [http-nio-8095-exec-9] o.s.t.i.TransactionInterceptor - Getting transaction for [com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit]
+23:21:40.214 DEBUG [http-nio-8095-exec-9] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL update
+23:21:40.214 DEBUG [http-nio-8095-exec-9] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL statement [UPDATE orders SET status = ? WHERE id = ?]
+23:21:40.214 INFO  [http-nio-8095-exec-9] c.e.txlab.repository.OrderRepository - JDBC: UPDATE orders SET status='PAID' WHERE id=3 → 影响 1 行（尚未提交，可被回滚）
+23:21:40.214 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Suspending current transaction, creating new transaction with name [com.example.txlab.service.RequiresNewAuditService.saveAudit]
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Acquired Connection [HikariProxyConnection@1332188780 wrapping conn1: url=jdbc:h2:mem:txlab user=SA] for JDBC transaction
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Switching JDBC Connection [HikariProxyConnection@1332188780 wrapping conn1: url=jdbc:h2:mem:txlab user=SA] to manual commit
+23:21:40.215 TRACE [http-nio-8095-exec-9] o.s.t.i.TransactionInterceptor - Getting transaction for [com.example.txlab.service.RequiresNewAuditService.saveAudit]
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL update
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL statement [INSERT INTO audit_log (order_id, action, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)]
+23:21:40.215 INFO  [http-nio-8095-exec-9] c.e.txlab.repository.AuditRepository - JDBC: INSERT INTO audit_log(order_id=3, action='PAY_AUDIT_REQUIRES_NEW') → 影响 1 行（尚未提交，可被回滚）
+23:21:40.215 WARN  [http-nio-8095-exec-9] c.e.t.s.RequiresNewAuditService - RequiresNewAuditService 业务失败，准备抛出异常(orderId=3)
+23:21:40.215 TRACE [http-nio-8095-exec-9] o.s.t.i.TransactionInterceptor - Completing transaction for [com.example.txlab.service.RequiresNewAuditService.saveAudit] after exception: java.lang.RuntimeException: 模拟审计业务异常（REQUIRES_NEW 独立事务）
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Initiating transaction rollback
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Rolling back JDBC transaction on Connection [HikariProxyConnection@1332188780 wrapping conn1: url=jdbc:h2:mem:txlab user=SA]
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Releasing JDBC Connection [HikariProxyConnection@1332188780 wrapping conn1: url=jdbc:h2:mem:txlab user=SA] after transaction
+23:21:40.215 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Resuming suspended transaction after completion of inner transaction
+23:21:40.215 WARN  [http-nio-8095-exec-9] c.e.t.s.PaymentComparisonService - 日志B：外层捕获内层 REQUIRES_NEW 异常，异常类型=java.lang.RuntimeException
+23:21:40.216 INFO  [http-nio-8095-exec-9] c.e.t.s.PaymentComparisonService - 日志A：准备返回 SUCCESS
+23:21:40.216 TRACE [http-nio-8095-exec-9] o.s.t.i.TransactionInterceptor - Completing transaction for [com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit]
+23:21:40.216 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Initiating transaction commit
+23:21:40.216 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Committing JDBC transaction on Connection [HikariProxyConnection@513802363 wrapping conn0: url=jdbc:h2:mem:txlab user=SA]
+23:21:40.216 DEBUG [http-nio-8095-exec-9] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL query
+23:21:40.216 DEBUG [http-nio-8095-exec-9] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL statement [SELECT status FROM orders WHERE id = ?]
+23:21:40.216 INFO  [http-nio-8095-exec-9] c.e.txlab.trace.TransactionTrace - 事务同步 afterCompletion: owner=PaymentComparisonService.payWithRequiresNewAudit, status=COMMITTED(0)
+23:21:40.216 DEBUG [http-nio-8095-exec-9] o.s.j.support.JdbcTransactionManager - Releasing JDBC Connection [HikariProxyConnection@513802363 wrapping conn0: url=jdbc:h2:mem:txlab user=SA] after transaction
+23:21:40.216 INFO  [http-nio-8095-exec-9] c.e.txlab.controller.OrderController - 日志C：SUCCESS
+23:21:40.217 INFO  [http-nio-8095-exec-9] c.example.txlab.trace.TraceRecorder - 
+================ 真实执行轨迹：对照场景 Test05 POST /api/lab/pay/requires-new?orderId=3 ================
+[038] RUN         ===== 开始实验：对照场景 Test05 POST /api/lab/pay/requires-new?orderId=3 =====
+[039] CONTROLLER  Controller 调用 paymentComparisonService.payWithRequiresNewAudit(3)
+[040] TX_OUTER    【Test05】外层事务开启（newTx=true）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[041] TX_SYNC     已注册事务完成同步回调（用于捕获 beforeCompletion / afterCompletion 的真实时机）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[042] SQL         执行 UPDATE orders SET status='PAID' WHERE id=3 → 影响 1 行（事务未提交）
+[043] TX_OUTER    【Test05】订单 UPDATE 已执行，未提交  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[044] TX_INNER    【Test05】进入 RequiresNewAuditService.saveAudit()：REQUIRES_NEW 挂起外层事务，借用第二条连接开启独立物理事务（newTx=true）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.RequiresNewAuditService.saveAudit}
+[045] SQL         执行 INSERT INTO audit_log(order_id=3, action='PAY_AUDIT_REQUIRES_NEW') → 影响 1 行（事务未提交）
+[046] TX_INNER    【Test05】审计 INSERT 已执行在独立事务里，仍未提交  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.RequiresNewAuditService.saveAudit}
+[047] EXCEPTION   【Test05】内层独立事务即将抛出 RuntimeException（只回滚它自己）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.RequiresNewAuditService.saveAudit}
+[048] TX_OUTER    【Test05】日志B：外层捕获 RuntimeException，内层已回滚它自己的物理事务，外层事务未被标记 rollback-only  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[049] ROLLBACK_ONLY 【Test05】内层异常返回后读共享事务状态：rollbackOnly=false（内层独立事务不影响外层标记）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[050] RETURN      【Test05】日志A 已打印，方法体即将 return "SUCCESS"  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[051] TX_SYNC     【步骤11】beforeCommit(readOnly=false)：事务拦截器已决定要走 commit 分支，同步回调先执行  ⇢ tx{active=true, sync=true, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[052] TX_SYNC     【步骤11】beforeCompletion：外层事务进入完成阶段（此刻业务方法早已 return 完毕）  ⇢ tx{active=true, sync=true, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[053] TX_SYNC     【步骤12】afterCompletion(status=COMMITTED(0))：数据库层操作已执行完毕；此刻用同一条（已结束的）连接回读 → orders.status=PAID  ⇢ tx{active=true, sync=false, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[054] CONTROLLER  日志C 执行：Controller 正常拿到返回值 SUCCESS
+==================================================================
+

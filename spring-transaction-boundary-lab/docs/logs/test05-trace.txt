@@ -1,0 +1,20 @@
+
+================ 真实执行轨迹：对照场景 Test05 POST /api/lab/pay/requires-new?orderId=3 ================
+[038] RUN         ===== 开始实验：对照场景 Test05 POST /api/lab/pay/requires-new?orderId=3 =====
+[039] CONTROLLER  Controller 调用 paymentComparisonService.payWithRequiresNewAudit(3)
+[040] TX_OUTER    【Test05】外层事务开启（newTx=true）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[041] TX_SYNC     已注册事务完成同步回调（用于捕获 beforeCompletion / afterCompletion 的真实时机）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[042] SQL         执行 UPDATE orders SET status='PAID' WHERE id=3 → 影响 1 行（事务未提交）
+[043] TX_OUTER    【Test05】订单 UPDATE 已执行，未提交  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[044] TX_INNER    【Test05】进入 RequiresNewAuditService.saveAudit()：REQUIRES_NEW 挂起外层事务，借用第二条连接开启独立物理事务（newTx=true）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.RequiresNewAuditService.saveAudit}
+[045] SQL         执行 INSERT INTO audit_log(order_id=3, action='PAY_AUDIT_REQUIRES_NEW') → 影响 1 行（事务未提交）
+[046] TX_INNER    【Test05】审计 INSERT 已执行在独立事务里，仍未提交  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.RequiresNewAuditService.saveAudit}
+[047] EXCEPTION   【Test05】内层独立事务即将抛出 RuntimeException（只回滚它自己）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.RequiresNewAuditService.saveAudit}
+[048] TX_OUTER    【Test05】日志B：外层捕获 RuntimeException，内层已回滚它自己的物理事务，外层事务未被标记 rollback-only  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[049] ROLLBACK_ONLY 【Test05】内层异常返回后读共享事务状态：rollbackOnly=false（内层独立事务不影响外层标记）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[050] RETURN      【Test05】日志A 已打印，方法体即将 return "SUCCESS"  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[051] TX_SYNC     【步骤11】beforeCommit(readOnly=false)：事务拦截器已决定要走 commit 分支，同步回调先执行  ⇢ tx{active=true, sync=true, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[052] TX_SYNC     【步骤11】beforeCompletion：外层事务进入完成阶段（此刻业务方法早已 return 完毕）  ⇢ tx{active=true, sync=true, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[053] TX_SYNC     【步骤12】afterCompletion(status=COMMITTED(0))：数据库层操作已执行完毕；此刻用同一条（已结束的）连接回读 → orders.status=PAID  ⇢ tx{active=true, sync=false, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithRequiresNewAudit}
+[054] CONTROLLER  日志C 执行：Controller 正常拿到返回值 SUCCESS
+==================================================================

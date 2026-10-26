@@ -1,0 +1,48 @@
+23:21:39.315 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Creating new transaction with name [com.example.txlab.service.PaymentService.pay]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+23:21:39.316 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Acquired Connection [HikariProxyConnection@1269396565 wrapping conn0: url=jdbc:h2:mem:txlab user=SA] for JDBC transaction
+23:21:39.317 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Switching JDBC Connection [HikariProxyConnection@1269396565 wrapping conn0: url=jdbc:h2:mem:txlab user=SA] to manual commit
+23:21:39.317 TRACE [http-nio-8095-exec-6] o.s.t.i.TransactionInterceptor - Getting transaction for [com.example.txlab.service.PaymentService.pay]
+23:21:39.318 DEBUG [http-nio-8095-exec-6] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL update
+23:21:39.318 DEBUG [http-nio-8095-exec-6] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL statement [UPDATE orders SET status = ? WHERE id = ?]
+23:21:39.318 INFO  [http-nio-8095-exec-6] c.e.txlab.repository.OrderRepository - JDBC: UPDATE orders SET status='PAID' WHERE id=1 → 影响 1 行（尚未提交，可被回滚）
+23:21:39.320 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Participating in existing transaction
+23:21:39.320 TRACE [http-nio-8095-exec-6] o.s.t.i.TransactionInterceptor - Getting transaction for [com.example.txlab.service.AuditService.saveAudit]
+23:21:39.320 DEBUG [http-nio-8095-exec-6] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL update
+23:21:39.320 DEBUG [http-nio-8095-exec-6] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL statement [INSERT INTO audit_log (order_id, action, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)]
+23:21:39.320 INFO  [http-nio-8095-exec-6] c.e.txlab.repository.AuditRepository - JDBC: INSERT INTO audit_log(order_id=1, action='PAY_AUDIT') → 影响 1 行（尚未提交，可被回滚）
+23:21:39.321 WARN  [http-nio-8095-exec-6] c.example.txlab.service.AuditService - AuditService.saveAudit 业务校验失败，准备抛出 RuntimeException(orderId=1)
+23:21:39.321 TRACE [http-nio-8095-exec-6] o.s.t.i.TransactionInterceptor - Completing transaction for [com.example.txlab.service.AuditService.saveAudit] after exception: java.lang.RuntimeException: 模拟审计业务异常
+23:21:39.321 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Participating transaction failed - marking existing transaction as rollback-only
+23:21:39.321 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Setting JDBC transaction [HikariProxyConnection@1269396565 wrapping conn0: url=jdbc:h2:mem:txlab user=SA] rollback-only
+23:21:39.321 WARN  [http-nio-8095-exec-6] c.e.txlab.service.PaymentService - 日志B：外层捕获审计异常，异常类型=java.lang.RuntimeException
+23:21:39.321 INFO  [http-nio-8095-exec-6] c.e.txlab.service.PaymentService - 日志A：准备返回 SUCCESS
+23:21:39.321 TRACE [http-nio-8095-exec-6] o.s.t.i.TransactionInterceptor - Completing transaction for [com.example.txlab.service.PaymentService.pay]
+23:21:39.321 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Global transaction is marked as rollback-only but transactional code requested commit
+23:21:39.322 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Initiating transaction rollback
+23:21:39.322 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Rolling back JDBC transaction on Connection [HikariProxyConnection@1269396565 wrapping conn0: url=jdbc:h2:mem:txlab user=SA]
+23:21:39.322 DEBUG [http-nio-8095-exec-6] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL query
+23:21:39.322 DEBUG [http-nio-8095-exec-6] o.s.jdbc.core.JdbcTemplate - Executing prepared SQL statement [SELECT status FROM orders WHERE id = ?]
+23:21:39.323 INFO  [http-nio-8095-exec-6] c.e.txlab.trace.TransactionTrace - 事务同步 afterCompletion: owner=PaymentService.pay, status=ROLLED_BACK(1)
+23:21:39.323 DEBUG [http-nio-8095-exec-6] o.s.j.support.JdbcTransactionManager - Releasing JDBC Connection [HikariProxyConnection@1269396565 wrapping conn0: url=jdbc:h2:mem:txlab user=SA] after transaction
+23:21:39.323 ERROR [http-nio-8095-exec-6] c.e.txlab.controller.OrderController - 日志D：UnexpectedRollbackException
+23:21:39.325 INFO  [http-nio-8095-exec-6] c.example.txlab.trace.TraceRecorder - 
+================ 真实执行轨迹：核心场景 POST /api/lab/pay?orderId=1 ================
+[002] RUN         ===== 开始实验：核心场景 POST /api/lab/pay?orderId=1 =====
+[003] CONTROLLER  【步骤1】Controller 调用 paymentService.pay(1)：注入进来的是 Spring 事务代理，不是裸对象
+[004] TX_OUTER    【步骤2】进入 PaymentService.pay()：外层事务已由事务代理开启（newTx=true 表示这条物理事务归本方法所有）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[005] TX_SYNC     已注册事务完成同步回调（用于捕获 beforeCompletion / afterCompletion 的真实时机）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[006] SQL         执行 UPDATE orders SET status='PAID' WHERE id=1 → 影响 1 行（事务未提交）
+[007] TX_OUTER    【步骤3】订单 UPDATE 已经执行，但事务还没有提交（此刻回滚，这行改动会消失）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[008] TX_OUTER    【步骤4】准备调用 auditService.saveAudit()：目标是 AuditService 的 Spring 代理  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[009] TX_INNER    【步骤4/5】进入 AuditService.saveAudit()：内层事务代理已加入外层事务（newTx=false 表示没有新开物理事务）  ⇢ tx{active=true, sync=true, newTx=false, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[010] SQL         执行 INSERT INTO audit_log(order_id=1, action='PAY_AUDIT') → 影响 1 行（事务未提交）
+[011] TX_INNER    【步骤5】审计 INSERT 已执行，事务仍未提交（同一条连接里能看到，其他连接看不到）  ⇢ tx{active=true, sync=true, newTx=false, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[012] EXCEPTION   【步骤6】内层方法即将抛出 RuntimeException（真实业务异常，不是伪造）  ⇢ tx{active=true, sync=true, newTx=false, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[013] TX_OUTER    【步骤9】日志B：外层 catch 捕获 RuntimeException，异常被吞掉，方法体继续往下执行  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=true, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[014] ROLLBACK_ONLY 【步骤8验证】读共享事务状态：rollbackOnly=true 说明内层拦截器已经标记过，但此时数据库并没有回滚，订单 UPDATE 仍在未提交状态  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=true, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[015] RETURN      【步骤10】日志A 已打印，方法体即将 return "SUCCESS"（业务逻辑到这里就结束了）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=true, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[016] TX_SYNC     【步骤11】beforeCompletion：外层事务进入完成阶段（此刻业务方法早已 return 完毕）  ⇢ tx{active=true, sync=true, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[017] TX_SYNC     【步骤12】afterCompletion(status=ROLLED_BACK(1))：数据库层操作已执行完毕；此刻用同一条（已结束的）连接回读 → orders.status=PENDING  ⇢ tx{active=true, sync=false, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentService.pay}
+[018] CONTROLLER  【步骤14】日志D 执行：Controller 捕获 org.springframework.transaction.UnexpectedRollbackException，message=Transaction rolled back because it has been marked as rollback-only
+==================================================================
+

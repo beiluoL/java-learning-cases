@@ -1,0 +1,58 @@
+# ============================================================================
+# Q021-EXT 事务边界实验室 配置
+# 说明：
+#   1. 使用 H2 内存库（DB_CLOSE_DELAY=-1 保证同一 JVM 内连接池共享同一个库）
+#   2. 真实 DataSourceTransactionManager（Spring Boot 对 spring-jdbc 自动装配为 JdbcTransactionManager，
+#      它是 DataSourceTransactionManager 的子类，行为一致）
+#   3. 打开 Spring 事务/同步/JdbcTemplate 的 DEBUG 日志，用于观察真实事务生命周期
+# ============================================================================
+server:
+  port: 8095
+
+spring:
+  application:
+    name: spring-transaction-boundary-lab
+
+  datasource:
+    url: jdbc:h2:mem:txlab;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+    hikari:
+      pool-name: TxLabHikariPool
+      # REQUIRES_NEW 场景必须同时占用两条物理连接（外层挂起 + 内层新建）
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 5000
+
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jackson:
+    default-property-inclusion: non_null
+
+logging:
+  level:
+    root: INFO
+    com.example.txlab: DEBUG
+    # 事务拦截器：Spring 6.2.x 中 "Getting transaction for [...]" / "Completing transaction for [...]" 是 TRACE 级
+    org.springframework.transaction.interceptor: TRACE
+    # 事务管理器：注意 AbstractPlatformTransactionManager 用 LogFactory.getLog(getClass()) 取 logger，
+    # 实际实现类是 JdbcTransactionManager，因此 logger 名是 org.springframework.jdbc.support.JdbcTransactionManager。
+    # 想看到 "Creating new transaction" / "Participating in existing transaction" /
+    # "Participating transaction failed - marking existing transaction as rollback-only" /
+    # "Initiating transaction rollback" 这些关键行，必须开这一级。
+    org.springframework.jdbc.support: DEBUG
+    org.springframework.jdbc.datasource: DEBUG
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

@@ -1,0 +1,14 @@
+# 构建产物
+target/
+
+# 一键脚本运行时状态（PID / 中间件记录）
+.run/
+
+# 脚本产生的后端运行日志
+# 注意：不要写 *.log —— docs/logs/ 下是交付证据日志，必须保留
+backend.log
+# 反覆盖工作区根目录 .gitignore 里的 *.log 规则（深层 .gitignore 优先级更高）
+!docs/logs/*.log
+
+# 系统文件
+.DS_Store

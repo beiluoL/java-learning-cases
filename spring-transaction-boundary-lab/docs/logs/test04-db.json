@@ -1,0 +1,29 @@
+{
+    "orders": [
+        {
+            "ID": 1,
+            "STATUS": "PENDING",
+            "CREATED_AT": "2026-10-26T15:21:39.675+00:00"
+        },
+        {
+            "ID": 2,
+            "STATUS": "PAID",
+            "CREATED_AT": "2026-10-26T15:21:39.676+00:00"
+        },
+        {
+            "ID": 3,
+            "STATUS": "PENDING",
+            "CREATED_AT": "2026-10-26T15:21:39.676+00:00"
+        }
+    ],
+    "ordersCount": 3,
+    "auditLogs": [
+        {
+            "ID": 2,
+            "ORDER_ID": 2,
+            "ACTION": "PAY_AUDIT_SELF_CAUGHT",
+            "CREATED_AT": "2026-10-26T15:21:39.766+00:00"
+        }
+    ],
+    "auditLogCount": 1
+}

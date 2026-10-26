@@ -1,0 +1,20 @@
+
+================ 真实执行轨迹：对照场景 Test04 POST /api/lab/pay/self-caught?orderId=2 ================
+[020] RUN         ===== 开始实验：对照场景 Test04 POST /api/lab/pay/self-caught?orderId=2 =====
+[021] CONTROLLER  Controller 调用 paymentComparisonService.payWithSelfCaughtAudit(2)
+[022] TX_OUTER    【Test04】外层事务开启（newTx=true）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[023] TX_SYNC     已注册事务完成同步回调（用于捕获 beforeCompletion / afterCompletion 的真实时机）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[024] SQL         执行 UPDATE orders SET status='PAID' WHERE id=2 → 影响 1 行（事务未提交）
+[025] TX_OUTER    【Test04】订单 UPDATE 已执行，未提交  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[026] TX_INNER    【Test04】进入 SelfHealingAuditService.saveAudit()：REQUIRED 加入外层事务（newTx=false）  ⇢ tx{active=true, sync=true, newTx=false, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[027] SQL         执行 INSERT INTO audit_log(order_id=2, action='PAY_AUDIT_SELF_CAUGHT') → 影响 1 行（事务未提交）
+[028] TX_INNER    【Test04】审计 INSERT 已执行，事务仍未提交  ⇢ tx{active=true, sync=true, newTx=false, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[029] EXCEPTION   【Test04】异常在方法内部被 catch：事务拦截器完全感知不到，不会标记 rollback-only  ⇢ tx{active=true, sync=true, newTx=false, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[030] RETURN      【Test04】内层方法正常返回给事务拦截器 → 拦截器认为一切正常，不做 rollback-only 标记  ⇢ tx{active=true, sync=true, newTx=false, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[031] ROLLBACK_ONLY 【Test04】内层正常返回后读共享事务状态：rollbackOnly=false（没有任何回滚标记）  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[032] RETURN      【Test04】日志A 已打印，方法体即将 return "SUCCESS"  ⇢ tx{active=true, sync=true, newTx=true, rollbackOnly=false, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[033] TX_SYNC     【步骤11】beforeCommit(readOnly=false)：事务拦截器已决定要走 commit 分支，同步回调先执行  ⇢ tx{active=true, sync=true, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[034] TX_SYNC     【步骤11】beforeCompletion：外层事务进入完成阶段（此刻业务方法早已 return 完毕）  ⇢ tx{active=true, sync=true, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[035] TX_SYNC     【步骤12】afterCompletion(status=COMMITTED(0))：数据库层操作已执行完毕；此刻用同一条（已结束的）连接回读 → orders.status=PAID  ⇢ tx{active=true, sync=false, newTx=null, rollbackOnly=null, resources=1, name=com.example.txlab.service.PaymentComparisonService.payWithSelfCaughtAudit}
+[036] CONTROLLER  日志C 执行：Controller 正常拿到返回值 SUCCESS
+==================================================================
