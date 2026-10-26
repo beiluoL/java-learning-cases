@@ -1,0 +1,45 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: finpay-business
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/finpay?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: finpay
+    password: finpay123
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-handlers-package: com.finpay.business.infrastructure.handler
+  global-config:
+    db-config:
+      id-type: auto
+
+# 加密密钥：生产务必通过 KMS / 配置中心注入，禁止明文写在仓库
+finpay:
+  crypto:
+    aes-key: ${FINPAY_AES_KEY:}
+    rsa-private-key: ${FINPAY_RSA_PRIVATE:}
+    rsa-public-key: ${FINPAY_RSA_PUBLIC:}
+    debug: true
+  security:
+    jwt-secret: ${FINPAY_JWT_SECRET:finpay-default-secret-key-please-change-32b}
+    jwt-expire-seconds: 7200
+
+knife4j:
+  enable: true
+
+logging:
+  level:
+    com.finpay: INFO

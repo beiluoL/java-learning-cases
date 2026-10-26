@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS sys_user (
+    id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
+    username    VARCHAR(64)  NOT NULL COMMENT '用户名',
+    email       VARCHAR(128) NOT NULL DEFAULT '' COMMENT '邮箱',
+    create_time DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted     INT          NOT NULL DEFAULT 0 COMMENT '逻辑删除：0未删 1已删',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';

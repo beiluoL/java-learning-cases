@@ -1,0 +1,16 @@
+# 运行态（一键脚本生成）
+logs/
+.run/
+
+# Maven
+backend/target/
+backend/.idea/
+backend/*.iml
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vscode/
+
+# OS
+.DS_Store

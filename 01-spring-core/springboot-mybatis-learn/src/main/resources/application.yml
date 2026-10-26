@@ -1,0 +1,28 @@
+server:
+  # Web 服务端口
+  port: 8080
+
+spring:
+  datasource:
+    # MySQL 8.x 驱动类
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 连接本地 learn_db 库；参数说明见下方注释
+    # useSSL=false 关闭 SSL；serverTimezone 设置时区避免乱码/告警；
+    # allowPublicKeyRetrieval=true 允许 MySQL 8 的密码交换
+    url: "jdbc:mysql://localhost:3306/learn_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true"
+    username: root
+    password: root
+    # 学习/演示友好：HikariCP 启动时【不】强制建立初始连接，
+    # 即使本机 MySQL 未启动，应用也能正常 boot 并访问 /api/hello。
+    # 真正查询数据库（/api/users）时才会连库；联调请先启动 MySQL 并执行 resources/sql/schema.sql。
+    hikari:
+      initialization-fail-timeout: -1
+
+mybatis:
+  # Mapper XML 文件扫描路径（classpath*: 支持多模块）
+  mapper-locations: classpath*:mapper/**/*.xml
+  # 实体类别名包，XML 中 resultType 可直接写类名（如 User）
+  type-aliases-package: com.example.demo.entity
+  configuration:
+    # 数据库下划线命名自动映射到 Java 驼峰属性（user_name -> userName）
+    map-underscore-to-camel-case: true

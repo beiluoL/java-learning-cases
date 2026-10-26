@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: spring-vue-learn
+  # 默认使用 MySQL；想零配置体验可改为 h2：mvn -f backend/pom.xml spring-boot:run -Dspring.profiles.active=h2
+  profiles:
+    active: mysql
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+server:
+  port: 8080

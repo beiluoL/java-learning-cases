@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    # 连接本机 MySQL，数据库需提前创建：CREATE DATABASE spring_vue_learn DEFAULT CHARSET utf8mb4;
+    url: jdbc:mysql://localhost:3306/spring_vue_learn?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # 启动时自动执行 schema.sql 建表（IF NOT EXISTS，可重复执行）
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql

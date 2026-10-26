@@ -1,0 +1,43 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: finpay-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        # 登录与回调直通（不鉴权）
+        - id: auth-route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/auth/**
+        - id: callback-route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/callback/**
+        # 业务 API 统一转发（经网关鉴权）
+        - id: business-route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=0
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+finpay:
+  security:
+    jwt-secret: ${FINPAY_JWT_SECRET:finpay-default-secret-key-please-change-32b}
+
+logging:
+  level:
+    com.finpay.gateway: INFO

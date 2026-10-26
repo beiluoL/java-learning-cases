@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS sys_user (
+    id          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username    VARCHAR(64)  NOT NULL,
+    email       VARCHAR(128) NOT NULL DEFAULT '',
+    create_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted     INT          NOT NULL DEFAULT 0,
+    UNIQUE (username)
+);

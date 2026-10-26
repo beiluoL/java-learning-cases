@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    password: root
+  # 开发环境关闭 MyBatis SQL 打印以提速，按需开启
+  # mybatis-plus.configuration.log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
