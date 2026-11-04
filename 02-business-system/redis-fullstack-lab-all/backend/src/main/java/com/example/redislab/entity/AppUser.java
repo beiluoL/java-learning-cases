@@ -4,11 +4,16 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.io.Serializable;
+
 /**
  * 用户实体，对应 app_user 表。分布式会话场景以此演示登录态共享。
+ *
+ * <p>必须实现 {@link Serializable}：Spring Session 把会话属性以 Java 原生序列化方式写入 Redis，
+ * 若实体不可序列化，login 写入 loginUser 时会抛 "Cannot serialize"（code=500）。</p>
  */
 @TableName("app_user")
-public class AppUser {
+public class AppUser implements Serializable {
 
     @TableId(type = IdType.AUTO)
     private Long id;

@@ -44,11 +44,14 @@ public class PubSubController {
         this.objectMapper = objectMapper;
     }
 
-    /** 启动时创建消费组（已存在则忽略） */
+    /** 启动时创建消费组（已存在则忽略）。
+     *  用带 ReadOffset 的重载，等价于 XGROUP CREATE ... MKSTREAM：
+     *  即使 Stream 尚未存在也会一并创建，避免「先启动后发布」场景下消费组缺失导致的 NOGROUP 错误。 */
     @PostConstruct
     public void initGroup() {
         try {
-            stringRedisTemplate.opsForStream().createGroup(RedisKeys.streamChannel(), GROUP);
+            stringRedisTemplate.opsForStream()
+                    .createGroup(RedisKeys.streamChannel(), ReadOffset.from("0"), GROUP);
         } catch (Exception ignored) {
             // 消费组已存在，忽略
         }

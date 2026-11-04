@@ -72,10 +72,11 @@
             <version>${redisson.version}</version>
         </dependency>
 
-        <!-- Knife4j：OpenAPI3 接口文档（中文界面） -->
+        <!-- Knife4j：OpenAPI3 接口文档（中文界面）。Spring Boot 3 必须使用 jakarta 变种，
+             否则 Knife4jAutoConfiguration 会引用 javax.servlet.Filter 导致 NoClassDefFoundError 启动失败 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
             <version>${knife4j.version}</version>
         </dependency>
 

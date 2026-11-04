@@ -135,6 +135,8 @@ XREADGROUP GROUP cg c1 COUNT 10 STREAMS stream:demo >
 - **限流方案选型**：固定窗口（简单但有临界点双倍）、滑动窗口（精确）、令牌桶（支持突发）。
 - **Session 共享**：Spring Session 把 HttpSession 序列化进 Redis，多实例天然共享。
 
+> 想要更系统、按「常见面试题 + 标准答案」组织的版本（架构 / 选型 / 十场景实现 / 高并发难点 / 真实压测数据），见同级 **[INTERVIEW.md](./INTERVIEW.md)**。
+
 ---
 
 ## 七、说明
