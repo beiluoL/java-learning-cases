@@ -1,0 +1,70 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 30m            # 原生 Servlet 会话超时（配合 Spring Session 一起用）
+
+spring:
+  application:
+    name: redis-fullstack-lab
+  profiles:
+    active: h2                # 默认 h2（克隆即跑）；生产切 mysql：--spring.profiles.active=mysql
+  # ---------- 数据源：H2 内存库（MySQL 兼容模式，零配置即可跑） ----------
+  datasource:
+    url: jdbc:h2:mem:redislab;DB_CLOSE_DELAY=-1;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  sql:
+    init:
+      mode: always            # 启动时执行建表 + 种子数据
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/data.sql
+  # ---------- Redis：Lettuce + commons-pool2 连接池 ----------
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+      database: 0
+      lettuce:
+        pool:
+          max-active: 16       # 最大连接数：经验值 ≈ (核心数*2)，这里给 16，避免连接耗尽
+          max-idle: 8          # 最大空闲，应对突发流量后的回收上限
+          min-idle: 2          # 最小空闲，保证冷启动也有热连接，避免首请求卡顿
+          max-wait: 3000ms     # 借不到连接最多等 3s，超时抛异常而不是无限阻塞
+          time-between-eviction-runs: 30s
+  # ---------- Spring Session 存入 Redis，实现分布式会话 ----------
+  session:
+    store-type: redis
+    timeout: 30m
+    redis:
+      namespace: spring:session
+  jackson:
+    default-property-inclusion: non_null
+
+# ---------- MyBatis-Plus ----------
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.example.redislab.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 教学用：打印 SQL，生产可关
+
+# ---------- Knife4j 接口文档 ----------
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# ---------- Resilience4j 熔断（缓存雪崩场景：Redis 不可用时降级） ----------
+resilience4j:
+  circuitbreaker:
+    instances:
+      redisAvalanche:
+        failure-rate-threshold: 50            # 失败率超 50% 打开熔断
+        slow-call-duration-threshold: 2000ms  # 单次调用 >2s 视为慢调用
+        wait-duration-in-open-state: 10s       # 熔断后 10s 进入半开探测
+        permitted-number-of-calls-in-half-open-state: 5
+        sliding-window-type: count_based
+        sliding-window-size: 10
