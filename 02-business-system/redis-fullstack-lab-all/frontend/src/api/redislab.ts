@@ -57,6 +57,43 @@ export const lockDeduct = (productId = 1, impl = 'redis') =>
 export const lockReset = (productId = 1, count = 100) =>
   post<any>('/lock/reset', { productId, count })
 
+// ============ 场景11 秒杀库存（Lua 原子扣减 + 异步削峰落库） ============
+export const seckillInit = (productId = 1, stock = 100) =>
+  post<any>('/seckill/init', { productId, stock })
+export const seckillFlash = (productId = 1, userId = '') =>
+  post<any>('/seckill/flash', { productId, userId })
+export const seckillStatus = (productId = 1) => get<any>('/seckill/status', { productId })
+export const seckillOrders = (productId = 1) => get<any>('/seckill/orders', { productId })
+
+// ============ 场景12 幂等处理（Redis Token + MySQL 唯一索引） ============
+export const idempotentToken = () => post<any>('/idempotent/token')
+export const idempotentSubmit = (token: string, bizId: string, amount = 10) =>
+  post<any>('/idempotent/submit', { token, bizId, amount })
+export const idempotentReplay = (token: string, bizId: string, amount = 10, times = 20) =>
+  post<any>('/idempotent/replay', { token, bizId, amount, times })
+export const idempotentStatus = () => get<any>('/idempotent/status')
+export const idempotentRecords = () => get<any>('/idempotent/records')
+export const idempotentReset = () => post<any>('/idempotent/reset')
+
+// ============ 场景13 AI 额度管理（RPM/TPM 双滑动窗口） ============
+export const aiquotaConfig = (userId: string, rpm: number, tpm: number) =>
+  post<any>('/aiquota/config', { userId, rpm, tpm })
+export const aiquotaConsume = (userId: string, tokens: number) =>
+  post<any>('/aiquota/consume', { userId, tokens })
+export const aiquotaStress = (userId: string, tokens: number, times: number) =>
+  post<any>('/aiquota/stress', { userId, tokens, times })
+export const aiquotaStatus = (userId: string) => get<any>('/aiquota/status', { userId })
+export const aiquotaReset = (userId: string) => post<any>('/aiquota/reset', { userId })
+
+// ============ 场景14 延迟队列（订单超时自动关闭） ============
+export const delayCreate = (userId: string, delaySeconds: number) =>
+  post<any>('/delayqueue/create', { userId, delaySeconds })
+export const delayPay = (orderId: string) => post<any>('/delayqueue/pay', { orderId })
+export const delayCancel = (orderId: string) => post<any>('/delayqueue/cancel', { orderId })
+export const delayStatus = () => get<any>('/delayqueue/status')
+export const delayOrders = () => get<any>('/delayqueue/orders')
+export const delayReset = () => post<any>('/delayqueue/reset')
+
 // ============ 调试/观测 ============
 export const debugKeys = (pattern = '*') => get<string[]>('/debug/keys', { pattern })
 export const debugGet = (key: string) => get<any>('/debug/get', { key })

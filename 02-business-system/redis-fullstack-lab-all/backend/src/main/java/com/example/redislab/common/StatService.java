@@ -34,4 +34,13 @@ public class StatService {
     public void reset() {
         counters.clear();
     }
+
+    /**
+     * 按前缀重置计数：让单个演练场景可以独立「重置演示」而不清空其它场景的观测数据。
+     * 例：resetByPrefix("seckill:") 只清秒杀场景的指标。
+     */
+    public void resetByPrefix(String prefix) {
+        if (prefix == null) return;
+        counters.keySet().removeIf(k -> k.startsWith(prefix));
+    }
 }

@@ -1,6 +1,6 @@
 # Redis 全栈实战（Spring Boot 3 + Vue3 + Redis 7）
 
-一个**克隆即跑、贴近生产**的全栈 Redis 实战教学项目。覆盖主流开源项目中最常见的 10 个 Redis 真实业务场景，每个场景都包含：完整可运行代码、项目目录结构、依赖配置与业务背景说明。
+一个**克隆即跑、贴近生产**的全栈 Redis 实战教学项目。覆盖 **14 个 Redis 高并发与分布式实战场景**（10 个基础场景 + 4 个高并发进阶模块：秒杀库存 / 幂等处理 / AI 额度管理 / 延迟队列），每个场景都包含：完整可运行代码、项目目录结构、依赖配置与业务背景说明。
 
 > 配套提示词（用于让 AI 生成本项目）：`../docs/redis-fullstack-project-prompt.md`
 
@@ -37,15 +37,16 @@ redis-fullstack-lab-all/
 │       ├── core/               # 锁抽象、限流注解+AOP、令牌桶、布隆过滤器
 │       ├── entity/ mapper/ service/   # 商品/用户/库存 + MyBatis-Plus
 │       ├── controller/         # DebugController（观测接口）
-│       └── modules/            # 10 个场景模块
+│       └── modules/            # 14 个场景模块
 │           ├── cache/ session/ rank/ ratelimit/ pubsub/
-│           └── penetration/ breakdown/ avalanche/ lock/
+│           ├── penetration/ breakdown/ avalanche/ lock/
+│           └── seckill/ idempotent/ aiquota/ delayqueue/   # 高并发进阶 4 模块
 │       └── resources/          # application.yml / application-mysql.yml / db/
 └── frontend/                    # Vue3
     └── src/
         ├── api/redislab.ts      # 按模块封装的请求
         ├── components/          # DemoPanel / RedisStateCard
-        ├── views/              # 9 个场景页面（Lock 共用）
+        ├── views/              # 13 个演练页（Lock 两实现共用一页）
         ├── store/ router/ utils/
 ```
 
@@ -87,7 +88,7 @@ npm run dev
 
 ---
 
-## 四、十大场景速查
+## 四、十四大场景速查
 
 | # | 场景 | 后端路径 | Redis 结构 / 技术 |
 |---|---|---|---|
@@ -101,8 +102,14 @@ npm run dev
 | 8 | 缓存雪崩 | `modules/avalanche` | TTL 随机抖动 + Caffeine 多级缓存 + 熔断 |
 | 9 | 分布式锁（手写） | `modules/lock` | SET NX EX + Lua 解锁 + 看门狗 |
 | 10 | 分布式锁（Redisson） | `modules/lock` | RLock（自动续期/可重入/RedLock） |
+| 11 | 秒杀库存 | `modules/seckill` | Lua 原子扣减 + 用户限购 Set + List 异步削峰落库 + DB 唯一约束兜底 |
+| 12 | 幂等处理 | `modules/idempotent` | Redis 一次性 Token（Lua）+ MySQL `biz_id` 唯一索引 |
+| 13 | AI 额度管理 | `modules/aiquota` | 单 ZSET + Lua 双滑动窗口 RPM / TPM，超额降级 |
+| 14 | 延迟队列 | `modules/delayqueue` | ZSet（score=到期时间）+ Lua 原子取出 + 重试/死信 |
 
-每个页面右上角的「Redis 实时观测」卡片，可看到 `cache:hit / ratelimit:blocked / penetration:bloom_block / lock:deduct_ok` 等计数，让效果肉眼可见。
+> **高并发进阶 4 模块**补齐「异步 / 协调 / 一致性」维度：秒杀验证「Lua 原子扣减无超卖」、幂等验证「并发 20 次只有 1 次生效」、额度验证「RPM/TPM 双维度原子校验」、延迟队列验证「到期自动关单且支付不误关」。每个模块都提供 `/status` 结构化指标接口与独立「重置演示」能力（`StatService.resetByPrefix`）。
+
+每个页面右上角的「Redis 实时观测」卡片，可看到 `cache:hit / ratelimit:blocked / penetration:bloom_block / lock:deduct_ok / seckill:success / aiquota:tpm_block / delayqueue:closed` 等计数，让效果肉眼可见。
 
 ---
 
@@ -123,6 +130,16 @@ SET lock:stock:1 <uuid> NX EX 30
 SUBSCRIBE pubsub:demo
 # 流
 XREADGROUP GROUP cg c1 COUNT 10 STREAMS stream:demo >
+# 秒杀库存 / 限购集合 / 异步削峰队列
+GET seckill:stock:1
+SMEMBERS seckill:users:1
+LRANGE seckill:pending:orders 0 -1
+# 幂等 token
+KEYS idempotent:*
+# AI 额度窗口（member = uuid|tokens）
+ZRANGE aiquota:window:u1 0 -1 WITHSCORES
+# 延迟队列（score 即到期时间戳）
+ZRANGE delayqueue:pending 0 -1 WITHSCORES
 ```
 
 ---
@@ -134,8 +151,12 @@ XREADGROUP GROUP cg c1 COUNT 10 STREAMS stream:demo >
 - **分布式锁四要素**：互斥、不死锁（过期）、不误删他人锁（UUID+Lua）、可重入/自动续期（Redisson 看门狗）。
 - **限流方案选型**：固定窗口（简单但有临界点双倍）、滑动窗口（精确）、令牌桶（支持突发）。
 - **Session 共享**：Spring Session 把 HttpSession 序列化进 Redis，多实例天然共享。
+- **秒杀为什么不超卖**：整段「限购校验 → 库存校验 → 扣减 → 入队」由 Lua 在 Redis 单线程原子执行；DB 唯一约束再兜一层；成功请求走 List 异步削峰，秒杀瞬间不打 DB。
+- **幂等为什么双保险**：Redis token 只挡「同一 token」，挡不住「换 token 但同业务单号」，必须靠 MySQL `biz_id` 唯一索引。
+- **RPM/TPM 为什么要单 Lua**：拆成两个计数器分别判断，并发下会出现「A 过了 RPM、B 过了 TPM」的不一致；单 ZSET + 单脚本一次原子判定。
+- **延迟队列为什么要 Lua 取出**：「先 ZRANGEBYSCORE 再逐个 ZREM」在多消费者下会重复关单；用 Lua 一次完成「查到期 + 全部移除」。
 
-> 想要更系统、按「常见面试题 + 标准答案」组织的版本（架构 / 选型 / 十场景实现 / 高并发难点 / 真实压测数据），见同级 **[INTERVIEW.md](./INTERVIEW.md)**。
+> 想要更系统、按「常见面试题 + 标准答案」组织的版本（架构 / 选型 / 十四场景实现 / 高并发难点 / 模块缺口审计与优化路线 / 真实压测数据），见同级 **[INTERVIEW.md](./INTERVIEW.md)**。
 
 ---
 

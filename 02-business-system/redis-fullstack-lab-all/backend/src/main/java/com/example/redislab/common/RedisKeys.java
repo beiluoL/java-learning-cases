@@ -24,6 +24,26 @@ public final class RedisKeys {
     public static String lockStock(Long productId)        { return "lock:stock:" + productId; }
     public static String lockMutex(String biz)            { return "lock:mutex:" + biz; }
 
+    // ---------- 场景11 秒杀库存 ----------
+    public static String seckillStock(Long productId)     { return "seckill:stock:" + productId; }
+    public static String seckillUsers(Long productId)     { return "seckill:users:" + productId; }
+    /** 异步削峰待落单队列（Redis List）；Lua 里 LPUSH 是确定性命令，比 XADD 更适合脚本内写入 */
+    public static String seckillPendingQueue()            { return "seckill:pending:orders"; }
+
+    // ---------- 场景12 幂等处理 ----------
+    public static String idempotentToken(String token)    { return "idempotent:token:" + token; }
+    public static String idempotentUsed(String token)     { return "idempotent:used:" + token; }
+
+    // ---------- 场景13 AI 额度管理 ----------
+    public static String aiquotaWindow(String userId)     { return "aiquota:window:" + userId; }
+    public static String aiquotaConfig(String userId)     { return "aiquota:config:" + userId; }
+
+    // ---------- 场景14 延迟队列（订单超时关闭） ----------
+    public static String delayQueue()                     { return "delayqueue:pending"; }
+    public static String delayOrder(String orderId)       { return "delayqueue:order:" + orderId; }
+    public static String delayDeadLetter()                { return "delayqueue:dead"; }
+    public static String delayRetry(String orderId)       { return "delayqueue:retry:" + orderId; }
+
     /**
      * 防雪崩核心：基础 TTL + 随机抖动。
      * 若所有 key 用同一固定 TTL，会同一时刻集体失效 -> 雪崩。

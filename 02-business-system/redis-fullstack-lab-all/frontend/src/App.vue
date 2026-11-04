@@ -20,6 +20,12 @@ const active = computed(() => route.path)
         <el-menu-item index="/breakdown"><el-icon><Lightning /></el-icon>缓存击穿</el-menu-item>
         <el-menu-item index="/avalanche"><el-icon><Warning /></el-icon>缓存雪崩</el-menu-item>
         <el-menu-item index="/lock"><el-icon><Lock /></el-icon>分布式锁</el-menu-item>
+        <el-menu-item-group title="高并发进阶">
+          <el-menu-item index="/seckill"><el-icon><ShoppingCart /></el-icon>秒杀库存</el-menu-item>
+          <el-menu-item index="/idempotent"><el-icon><DocumentChecked /></el-icon>幂等处理</el-menu-item>
+          <el-menu-item index="/aiquota"><el-icon><DataAnalysis /></el-icon>AI 额度管理</el-menu-item>
+          <el-menu-item index="/delayqueue"><el-icon><Timer /></el-icon>延迟队列</el-menu-item>
+        </el-menu-item-group>
       </el-menu>
     </el-aside>
     <el-main class="main">
@@ -35,5 +41,6 @@ const active = computed(() => route.path)
 .menu { background: #001529; border-right: none; }
 .menu :deep(.el-menu-item) { color: #ccc; }
 .menu :deep(.el-menu-item.is-active) { background: #1890ff; color: #fff; }
+.menu :deep(.el-menu-item-group__title) { color: #7a8ba0; font-size: 12px; padding-left: 20px !important; }
 .main { background: #f0f2f5; padding: 16px; overflow-y: auto; }
 </style>

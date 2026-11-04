@@ -15,7 +15,7 @@
     <artifactId>redis-fullstack-lab</artifactId>
     <version>1.0.0</version>
     <name>redis-fullstack-lab</name>
-    <description>Spring Boot 3 + Vue3 + Redis 全栈实战教学项目（十大场景）</description>
+    <description>Spring Boot 3 + Vue3 + Redis 全栈实战教学项目（十四大场景：10 基础 + 4 高并发进阶）</description>
 
     <properties>
         <java.version>17</java.version>
