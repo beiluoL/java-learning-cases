@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  订单 XML Mapper
+  说明：简单单表 CRUD 用 MyBatis-Plus 注解/内置方法即可；
+        这里刻意用 XML 写动态条件分页，演示两者混用的标准姿势（复杂 SQL 放 XML 更好维护）。
+-->
+<mapper namespace="com.example.mq.mapper.MqOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.mq.entity.MqOrder">
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="user_id" property="userId"/>
+        <result column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="quantity" property="quantity"/>
+        <result column="amount" property="amount"/>
+        <result column="status" property="status"/>
+        <result column="expire_time" property="expireTime"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="cancel_time" property="cancelTime"/>
+        <result column="cancel_reason" property="cancelReason"/>
+        <result column="delay_seconds" property="delaySeconds"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, order_no, user_id, product_id, product_name, quantity, amount, status,
+        expire_time, pay_time, cancel_time, cancel_reason, delay_seconds, create_time, update_time
+    </sql>
+
+    <!--
+      分页查询：第一个参数是 IPage 时，MyBatis-Plus 的分页插件会自动追加 LIMIT 并执行 count。
+      order by id desc —— 用自增主键排序，避免 create_time 同秒并发下单时顺序抖动。
+    -->
+    <select id="selectOrderPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM mq_order
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (order_no LIKE CONCAT('%', #{keyword}, '%')
+                OR product_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+</mapper>

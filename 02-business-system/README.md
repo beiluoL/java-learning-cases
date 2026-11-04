@@ -16,6 +16,7 @@
 | [ecommerce-learn-all](./ecommerce-learn-all) | 电商全栈（合并式目录：后端 `ecommerce-learn` + 前端 `ecommerce-learn-vue`） | Spring Boot · MyBatis · Vue 3 · Vite | 是 | `./start.command` |
 | [iot-platform](./iot-platform) | 企业级 IoT 物联网 + 大数据学习平台 | Spring Boot 3.2.12 · Vue 3 | 是 | `./start.command` / `start.bat` |
 | [finpay-scaffold](./finpay-scaffold) | 金融支付多模块脚手架：网关 + 业务 + Web 前端 | Spring Boot 3.2.5 · Gateway · Vue 3 | 是 | 网关 `mvn -pl finpay-gateway spring-boot:run`（:8088）；业务（:8080）；前端 `cd finpay-web && npm run dev` |
+| [mq-practice](./mq-practice) | MQ 实战三场景：秒杀削峰填谷、延迟消息超时关单、商品变更发布订阅（含确认/ACK/幂等/重试/死信回放 + 可视化控制台） | Spring Boot 3.4.1 · RabbitMQ · MyBatis-Plus · Redis · Vue 3 | 是 | `./start.command` / `start.bat`（自动拉起 RabbitMQ） |
 
 ---
 

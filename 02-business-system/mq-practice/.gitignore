@@ -1,0 +1,26 @@
+# ---------------------------------------------------------------------------
+# 构建产物
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# 前端
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# 运行时
+logs/
+.run/
+*.log
+*.pid
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# 容器数据
+data/

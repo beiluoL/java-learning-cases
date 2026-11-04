@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ======================================================================
+         mq-practice-parent —— Maven 多模块父工程
+         职责：统一版本 / 统一依赖管理 / 统一编译插件。
+         子模块：mq-practice-common（公共契约）、mq-practice-backend（业务 + MQ）
+         ====================================================================== -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example.mq</groupId>
+    <artifactId>mq-practice-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>mq-practice-parent</name>
+    <description>Spring Boot 3 + Vue3 全栈 MQ 消息队列实战（RabbitMQ 生产级范式）</description>
+
+    <modules>
+        <module>mq-practice-common</module>
+        <module>mq-practice-backend</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- MyBatis-Plus：Spring Boot 3 必须用 spring-boot3 变体，否则 jakarta 命名空间不匹配 -->
+        <mybatis-plus.version>3.5.7</mybatis-plus.version>
+        <springdoc.version>2.6.0</springdoc.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 内部模块 -->
+            <dependency>
+                <groupId>com.example.mq</groupId>
+                <artifactId>mq-practice-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- MyBatis-Plus（Boot3 starter） -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!-- OpenAPI 文档（纯 springdoc，不引入 knife4j，避免额外 jakarta 依赖风险） -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <parameters>true</parameters>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

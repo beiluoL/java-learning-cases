@@ -1,0 +1,85 @@
+# =====================================================================================
+#  MQ 实战项目 · 中间件编排
+#  用法：
+#    docker compose up -d                  # 拉起 MySQL + Redis + RabbitMQ
+#    docker compose up -d rabbitmq          # 只拉 RabbitMQ（本机已有 Redis/MySQL 时）
+#    docker compose logs -f rabbitmq        # 看日志
+#    docker compose down                    # 停止（保留数据卷）
+#    docker compose down -v                 # 停止并清空数据（重置演示环境）
+#
+#  RabbitMQ 控制台：http://localhost:15672  账号 guest / guest
+#  MySQL 初始化：sql/ 目录挂载到 /docker-entrypoint-initdb.d，
+#                首次启动会自动执行 01-schema-mysql.sql + 02-data-mysql.sql
+# =====================================================================================
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: mq-practice-rabbitmq
+    hostname: mq-practice-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"        # AMQP 协议端口（Spring AMQP 连这个）
+      - "${RABBITMQ_CONSOLE_PORT:-15672}:15672"  # 管理控制台
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      # 允许 guest 远程登录（仅本地开发；生产请新建专用账号并删掉这行）
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    volumes:
+      - mq-rabbitmq-data:/var/lib/rabbitmq
+      # 若需启用延迟消息插件，取消下面两行注释并重建容器：
+      # - ./infra/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      # - ./infra/rabbitmq.conf:/etc/rabbitmq/conf.d/99-mq-practice.conf:ro
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  mysql:
+    image: mysql:8.0
+    container_name: mq-practice-mysql
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: mq_practice
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-time-zone=+08:00
+    volumes:
+      - mq-mysql-data:/var/lib/mysql
+      # 首次初始化时按文件名顺序执行（01-schema → 02-data）
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: mq-practice-redis
+    restart: unless-stopped
+    ports:
+      # 本机若已有 Redis 占用 6379，可 REDIS_HOST_PORT=6380 docker compose up -d redis
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    command: [ "redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru" ]
+    volumes:
+      - mq-redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mq-rabbitmq-data:
+  mq-mysql-data:
+  mq-redis-data:

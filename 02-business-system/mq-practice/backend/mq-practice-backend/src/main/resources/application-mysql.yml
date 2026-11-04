@@ -1,0 +1,28 @@
+# =====================================================================================
+#  生产环境 profile：MySQL 8.0
+#  启动：java -jar mq-practice-backend.jar --spring.profiles.active=mysql
+#  前置：mysql -uroot -p < sql/01-schema-mysql.sql && mysql -uroot -p mq_practice < sql/02-data-mysql.sql
+# =====================================================================================
+spring:
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DB:mq_practice}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 3000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      # 秒杀场景下连接池名字便于在监控中定位
+      pool-name: MqPracticeHikariPool
+
+  # MySQL 已在 sql/ 脚本里建表，Boot 不再执行 H2 的 schema.sql
+  sql:
+    init:
+      mode: never
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl

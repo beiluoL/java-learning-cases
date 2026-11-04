@@ -1,0 +1,138 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+  # 优雅停机：给正在消费的消息留出处理时间（生产必备，避免 kill -9 丢消息）
+  shutdown: graceful
+
+spring:
+  application:
+    name: mq-practice-backend
+  profiles:
+    # 默认 h2（克隆即跑，无需装 MySQL）；生产/演示 MySQL 用 --spring.profiles.active=mysql
+    active: h2
+
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+  # ==================== 数据源（H2 便携版） ====================
+  datasource:
+    url: jdbc:h2:mem:mqpractice;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 3000
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/data.sql
+      continue-on-error: false
+
+  # ==================== Redis：Lettuce 连接池 ====================
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          # 秒杀压测时并发 SETNX/DECRBY 较多，池子要给够，否则 max-wait 超时会伪装成业务失败
+          max-active: 32
+          max-idle: 16
+          min-idle: 4
+          max-wait: 2000ms
+          time-between-eviction-runs: 30s
+
+  # ==================== RabbitMQ：可靠性三件套 ====================
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    connection-timeout: 10s
+    requested-heartbeat: 30s
+
+    # ---- ① 生产者确认：correlated = 每条消息带 CorrelationData，可精准对应 confirm 回调 ----
+    publisher-confirm-type: correlated
+    # ---- ② 生产者退回：消息到达 Exchange 但路由不到 Queue 时回调（必须配 mandatory=true 才生效）----
+    publisher-returns: true
+    template:
+      mandatory: true
+      retry:
+        enabled: false          # 重试由业务层（RetryTemplate / 本地消息表）控制，避免与 confirm 语义纠缠
+
+    listener:
+      simple:
+        # ---- ③ 消费者手动 ACK：处理成功才 basicAck，异常时按策略重投/进死信 ----
+        acknowledge-mode: manual
+        # 每个消费者最多预取 5 条：太大容易在某个消费者卡住时造成消息堆积不均，太小则吞吐上不去
+        prefetch: 5
+        concurrency: 2
+        max-concurrency: 8
+        # 关键：拒绝消息时不要无限 requeue（否则会死循环打爆 CPU），交给死信交换机
+        default-requeue-rejected: false
+        # Spring 自带重试默认关闭，重试/补偿完全由我们自己的「重试队列 + 死信队列」实现
+        retry:
+          enabled: false
+        missing-queues-fatal: false
+        # 启动时若 broker 未就绪，不至于让整个 Boot 启动失败（脚本会先拉起 RabbitMQ）
+        auto-startup: true
+
+# ==================== MyBatis-Plus ====================
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.example.mq.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    # 教学项目打印 SQL；生产建议改为 org.apache.ibatis.logging.nologging.NoLoggingImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: null
+
+# ==================== 业务自定义配置 ====================
+mq:
+  practice:
+    # 订单默认支付超时（秒）。压测/演示时可从前端传 delaySeconds 覆盖
+    order-delay-seconds: 1800
+    # 消费失败最大重试次数（超过进死信队列）
+    max-retry-count: 3
+    # 重试队列 TTL（毫秒）：失败消息先落到重试队列，5s 后再回投业务队列，实现「延迟重试」
+    retry-delay-ms: 5000
+    # 幂等键有效期（小时）
+    idempotent-ttl-hours: 24
+    # 商品缓存 TTL（分钟）
+    product-cache-ttl-minutes: 30
+    # 延迟消息实现模式：dlx（死信队列+TTL，零插件） / plugin（rabbitmq_delayed_message_exchange）
+    delay-mode: dlx
+    # 幂等开关：关闭后仅靠 DB 唯一键兜底（用于课堂对比演示）
+    idempotent-enabled: true
+
+# ==================== 接口文档 ====================
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    root: info
+    com.example.mq: debug
+    org.springframework.amqp: info
+    # 想看 AMQP 协议帧时打开下面两行
+    # org.springframework.amqp.rabbit.connection: debug
+    # com.rabbitmq.client: debug
