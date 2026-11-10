@@ -120,6 +120,24 @@ mq:
     # 幂等开关：关闭后仅靠 DB 唯一键兜底（用于课堂对比演示）
     idempotent-enabled: true
 
+    # ==================== RabbitMQ 运维台（Management API 代理） ====================
+    # 前端页面不直连 15672：凭据留在服务端，浏览器只访问本项目的 /api/mq/admin/**
+    admin:
+      enabled: true
+      # 服务端访问 Management API 的地址（容器内网/本地均可）
+      base-url: ${MQ_ADMIN_BASE_URL:http://localhost:15672}
+      # 浏览器里"打开原生控制台"跳转的地址（用户能访问到的地址）
+      console-url: ${MQ_ADMIN_CONSOLE_URL:http://localhost:15672}
+      # 只读账号即可满足大部分可视化需求；写操作见下方 write-*
+      username: ${MQ_ADMIN_USERNAME:guest}
+      password: ${MQ_ADMIN_PASSWORD:guest}
+      vhost: ${MQ_ADMIN_VHOST:/}
+      timeout-ms: 3000
+      # 写操作（清空队列 / 投递测试消息）总开关，生产建议 false
+      write-enabled: ${MQ_ADMIN_WRITE_ENABLED:true}
+      # 写操作口令：请求头 X-MQ-Admin-Token 必须等于该值；留空 = 一律拒绝写
+      write-token: ${MQ_ADMIN_WRITE_TOKEN:mq-practice}
+
 # ==================== 接口文档 ====================
 springdoc:
   swagger-ui:

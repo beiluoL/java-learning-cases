@@ -35,6 +35,8 @@ public enum ResultCode {
     MQ_CONFIRM_FAILED(5002, "消息未被 Broker 确认"),
     MQ_ROUTE_FAILED(5003, "消息路由失败，无匹配队列"),
     MQ_LISTENER_ERROR(5004, "消息消费异常"),
+    MQ_ADMIN_ERROR(5005, "RabbitMQ 管理接口调用失败"),
+    MQ_ADMIN_DISABLED(5006, "RabbitMQ 管理台未启用"),
     REDIS_UNAVAILABLE(5101, "缓存服务不可用");
 
     private final int code;

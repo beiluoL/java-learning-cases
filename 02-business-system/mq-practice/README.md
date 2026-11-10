@@ -103,6 +103,8 @@ mq-practice/
 │   ├── 01-schema-mysql.sql                   # MySQL 8.0 生产版建表（含注释/索引/字符集）
 │   └── 02-data-mysql.sql                     # 商品/库存/索引种子数据
 ├── docker-compose.yml                        # RabbitMQ + MySQL + Redis
+├── scripts/init-rabbitmq-users.sh            # 可选：创建 mq_app / mq_monitor 最小权限账号
+├── RABBITMQ-ADMIN.md                         # 可视化管理界面的选型 · 集成 · 安全 · 验证
 ├── start.command / stop.command / restart.command     # macOS 双击
 ├── start.bat     / stop.bat     / restart.bat         # Windows 双击
 └── README.md
@@ -307,6 +309,11 @@ public CreateOutcome createOrder(...) {
 | GET | `/api/mq/dlq` | 查看死信（只读） |
 | POST | `/api/mq/dlq/replay` | 死信回放 |
 | GET/POST | `/api/mq/chaos` | 故障注入开关（教学用，生产必删） |
+| GET | `/api/mq/admin/status` | 运维台：连接状态与集群概览 |
+| GET | `/api/mq/admin/queues` `/exchanges` `/bindings` `/consumers` `/connections` | 运维台：Broker 侧数据 |
+| POST | `/api/mq/admin/queues/{q}/peek` | 只读查看消息（读完放回） |
+| POST | `/api/mq/admin/queues/{q}/purge` | 清空队列（需 `X-MQ-Admin-Token`） |
+| POST | `/api/mq/admin/publish` | 投递测试消息（需口令 + 消息类型） |
 
 ---
 
@@ -376,7 +383,41 @@ docker restart mq-practice-rabbitmq
 
 ---
 
-## 十二、和真正的生产系统还差什么（诚实说明）
+## 十二、RabbitMQ 运维台（可视化管理）
+
+项目内建了一个 **Broker 侧**的可视化页面（`/admin`），数据经后端代理 Management HTTP API 获取，
+浏览器不持有 RabbitMQ 凭据。原生控制台仍然保留，两者分工如下：
+
+| 入口 | 地址 | 定位 |
+|---|---|---|
+| 项目内运维台 | http://localhost:5173/admin | 只读聚合 + 受控写，和业务页面同一导航 |
+| 原生控制台 | http://localhost:15672 | 全功能（建队列/改策略/用户），运维用 |
+| 运维台 API | http://localhost:8080/swagger-ui.html | 「RabbitMQ 运维台」分组，可直接调 |
+
+页面能力：
+
+- **队列**：就绪 / 未确认 / 消费者数 / 发投速率 / TTL / DLX；点行**只读查看消息**（`ack_requeue_true`，读完放回，不会消费）；
+- **交换机 / 绑定**：排查"消息发出去了但没人收到"（routingKey 与绑定对不上）；
+- **消费者**：`prefetch`、是否手动 ACK、`activity` 状态、来源主机；
+- **连接**：用户、对端、通道数、客户端版本；
+- **投递测试**：手发一条消息并返回 `routed`，用于验证绑定；带消息类型下拉（补齐 `__TypeId__` 头）。
+
+写操作（清空队列 / 投递）三重保护：`write-enabled` 总开关 + `X-MQ-Admin-Token` 口令 + 队列前缀白名单（仅 `mq.*`），
+任一不满足直接 403。
+
+```bash
+# 例：带口令清空延迟队列（演示环境默认口令 mq-practice）
+curl -X POST http://localhost:8080/api/mq/admin/queues/mq.order.delay.queue/purge \
+     -H 'X-MQ-Admin-Token: mq-practice'
+```
+
+> 选型对比、集成步骤、权限模型（`monitoring` / `management` / `administrator` tag 的差别）、
+> 生产 checklist 与验证清单，见 **[RABBITMQ-ADMIN.md](./RABBITMQ-ADMIN.md)**。
+> 生产务必改掉默认口令、把 15672 收进内网、并给运维台配只读账号。
+
+---
+
+## 十三、和真正的生产系统还差什么（诚实说明）
 
 | 能力 | 本项目 | 生产建议 |
 |---|---|---|
@@ -390,7 +431,7 @@ docker restart mq-practice-rabbitmq
 
 ---
 
-## 十三、面试速答（本项目可直接展开的点）
+## 十四、面试速答（本项目可直接展开的点）
 
 1. **如何保证消息不丢？** 生产端 confirm + return + 本地消息表；broker 持久化（durable queue + persistent message）；消费端手动 ACK + 幂等。
 2. **如何保证不重复消费？** MQ 只能做"至少一次"，重复必然发生；靠消费端幂等（Redis SETNX + DB 唯一键），而不是指望 MQ。
@@ -403,7 +444,7 @@ docker restart mq-practice-rabbitmq
 
 ---
 
-## 十四、验证记录（本机实测）
+## 十五、验证记录（本机实测）
 
 | 项 | 结果 |
 |---|---|
@@ -415,3 +456,4 @@ docker restart mq-practice-rabbitmq
 | 故障注入 → 重试 → 死信 → 回放 | 3 次退避后进 DLQ，回放后缓存写入成功 |
 | MySQL 8.0 profile | 建表脚本 + 全链路（下单/延迟取消）通过 |
 | macOS 启停脚本 | `start/stop/restart` 实测通过，含无 PID 文件时按签名精准停止 |
+| 运维台（Broker 侧） | 队列/交换机/绑定/消费者/连接 5 类数据正确；peek 后队列 `ready` 不变（未消费）；无口令/错口令 purge 均 403，非 `mq.` 前缀队列 403；带 `__TypeId__` 的手动投递能驱动缓存同步 |

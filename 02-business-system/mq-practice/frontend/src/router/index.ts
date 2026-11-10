@@ -35,6 +35,15 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/MonitorView.vue'),
     meta: { title: 'MQ 监控台', subtitle: '队列深度、消息账本、幂等记录、死信与故障注入' }
   },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/views/AdminView.vue'),
+    meta: {
+      title: 'RabbitMQ 运维台',
+      subtitle: 'Broker 侧视角：队列 · 交换机 · 绑定 · 消费者 · 连接（经后端代理）'
+    }
+  },
   { path: '/:pathMatch(.*)*', redirect: '/overview' }
 ]
 

@@ -48,9 +48,14 @@ export function get<T>(url: string, params?: Record<string, unknown>): Promise<T
   return instance.get(url, { params }) as unknown as Promise<T>
 }
 
-/** POST，直接返回业务数据 */
-export function post<T>(url: string, data?: unknown, params?: Record<string, unknown>): Promise<T> {
-  return instance.post(url, data, { params }) as unknown as Promise<T>
+/** POST，直接返回业务数据。headers 用于需要额外头（如运维口令）的写操作 */
+export function post<T>(
+  url: string,
+  data?: unknown,
+  params?: Record<string, unknown>,
+  headers?: Record<string, string>
+): Promise<T> {
+  return instance.post(url, data, { params, headers }) as unknown as Promise<T>
 }
 
 export default instance

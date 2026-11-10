@@ -185,3 +185,115 @@ export interface ChaosConfig {
   enabled: boolean
   failRate: number
 }
+
+/* =====================================================================================
+   RabbitMQ 运维台（Broker 侧，经后端代理 Management API）
+   ===================================================================================== */
+
+/** 连接状态与集群概览 */
+export interface AdminStatus {
+  enabled: boolean
+  ok: boolean
+  baseUrl: string
+  consoleUrl: string
+  version: string
+  clusterName: string
+  erlangVersion: string
+  vhost: string
+  username: string
+  writeEnabled: boolean
+  queueCount: number
+  exchangeCount: number
+  consumerCount: number
+  connectionCount: number
+  totalMessages: number
+  readyMessages: number
+  unackedMessages: number
+  message: string
+}
+
+/** 队列（Broker 视角） */
+export interface AdminQueue {
+  name: string
+  vhost: string
+  type: string
+  state: string
+  durable: boolean
+  autoDelete: boolean
+  exclusive: boolean
+  messages: number
+  ready: number
+  unacked: number
+  consumers: number
+  publishRate: number
+  deliverRate: number
+  ackRate: number
+  redeliverRate: number
+  messageBytes: number
+  arguments: Record<string, unknown>
+  messageTtlMs: number | null
+  managedByProject: boolean
+}
+
+export interface AdminExchange {
+  name: string
+  vhost: string
+  type: string
+  durable: boolean
+  autoDelete: boolean
+  internal: boolean
+  publishInRate: number
+  publishOutRate: number
+  arguments: Record<string, unknown>
+}
+
+export interface AdminBinding {
+  source: string
+  destination: string
+  destinationType: string
+  routingKey: string
+  arguments: Record<string, unknown>
+}
+
+export interface AdminConsumer {
+  queue: string
+  consumerTag: string
+  ackRequired: boolean
+  prefetchCount: number
+  activityStatus: string
+  exclusive: boolean
+  channel: string
+  peerHost: string
+  connectionName: string
+}
+
+export interface AdminConnection {
+  name: string
+  user: string
+  peerHost: string
+  state: string
+  channels: number
+  recvRate: number
+  sendRate: number
+  protocol: string
+  ssl: boolean
+  clientInfo: string
+}
+
+/** 从队列里 peek 出来的一条消息（只读，读完放回） */
+export interface PeekedMessage {
+  index: number
+  exchange: string
+  routingKey: string
+  redelivered: boolean
+  messageCount: number
+  payload: string
+  payloadBytes: number
+  contentType: string
+  headers: Record<string, unknown>
+}
+
+export interface PublishResult {
+  routed: boolean
+  note: string
+}

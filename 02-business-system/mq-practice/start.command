@@ -27,6 +27,30 @@ PID_BACKEND="$RUN_DIR/backend.pid"
 PID_FRONTEND="$RUN_DIR/frontend.pid"
 MAX_WAIT=180
 
+# ------------------------------------------------------------------ JDK 选择
+# 本机 Maven 可能默认跑在很新的 JDK 上（如 JDK 26），而 Spring Boot 3.4 / Lombok
+# 并不支持那么新的版本，表现为「Lombok 生成的 getter 凭空消失」这类诡异编译错误。
+# 这里显式挑选 17/21 的 JDK 并导出 JAVA_HOME，保证 mvn 与 java 用同一个。
+pick_jdk() {
+  local v home
+  if [ -x /usr/libexec/java_home ]; then
+    for v in 17 21 23; do
+      home="$(/usr/libexec/java_home -v "$v" 2>/dev/null)"
+      if [ -n "$home" ] && [ -x "$home/bin/java" ]; then
+        echo "$home"
+        return 0
+      fi
+    done
+  fi
+  return 1
+}
+PICKED_JDK="$(pick_jdk || true)"
+if [ -n "$PICKED_JDK" ]; then
+  export JAVA_HOME="$PICKED_JDK"
+fi
+JAVA_BIN="${JAVA_HOME:+$JAVA_HOME/bin/java}"
+[ -x "$JAVA_BIN" ] || JAVA_BIN="java"
+
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 info(){ printf "${CYAN}[INFO]${NC} %s\n" "$*"; }
 ok(){   printf "${GREEN}[ OK ]${NC} %s\n" "$*"; }
@@ -205,7 +229,7 @@ start_backend(){
   build_backend || return 1
 
   info "启动后端 -> http://localhost:${BACKEND_PORT}"
-  nohup java -jar "$JAR_PATH" --server.port="$BACKEND_PORT" > "$LOG_DIR/backend.log" 2>&1 &
+  nohup "$JAVA_BIN" -jar "$JAR_PATH" --server.port="$BACKEND_PORT" > "$LOG_DIR/backend.log" 2>&1 &
   echo $! > "$PID_BACKEND"
 
   local i=0
@@ -309,6 +333,20 @@ echo ""
 echo -e "${BOLD}══════════════════════════════════════════════════${NC}"
 echo -e "${BOLD}  ${PROJECT_NAME} · ${ACTION} (目标: ${TARGET})${NC}"
 echo -e "${BOLD}══════════════════════════════════════════════════${NC}"
+
+# ------------------------------------------------------------------ 依赖自检
+# 必须放在这里而不是脚本开头：mw_* 函数在定义阶段不应产生输出
+if [ "$TARGET" != "frontend" ]; then
+  if ! command -v mvn >/dev/null 2>&1; then
+    err "未找到 mvn（Maven），请先安装并加入 PATH"
+    pause_exit; exit 1
+  fi
+  if ! [ -x "$JAVA_BIN" ]; then
+    err "未找到可用的 java（需要 JDK 17+），请安装后重试"
+    pause_exit; exit 1
+  fi
+  info "JDK : $("$JAVA_BIN" -version 2>&1 | head -1)"
+fi
 
 case "$TARGET" in
   middleware)

@@ -34,7 +34,7 @@
       </div>
 
       <div class="sidebar-footer">
-        <div>RabbitMQ 控制台</div>
+        <div>RabbitMQ 原生控制台</div>
         <a href="http://localhost:15672" target="_blank" rel="noreferrer">localhost:15672 ↗</a>
         <div style="margin-top: 8px">API 文档</div>
         <a href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noreferrer">
@@ -94,7 +94,8 @@ const scenarioRoutes = [
 
 const opsRoutes = [
   { path: '/overview', label: '总览与拓扑', idx: '—' },
-  { path: '/monitor', label: 'MQ 监控台', idx: '—' }
+  { path: '/monitor', label: 'MQ 监控台', idx: '—' },
+  { path: '/admin', label: 'RabbitMQ 运维台', idx: '—' }
 ]
 
 const current = computed(() => route)
