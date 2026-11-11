@@ -61,7 +61,7 @@ V1.0 交付的是「成本可算、预算可控」的工程基线（5 表 / 6 �
 |---|---|
 | **九级作用域**：`GLOBAL` / `USER` / `MODEL` / `DAILY` / `MONTHLY` / `SCENE` / `KNOWLEDGE_BASE` / `AGENT` / `REQUEST` | `AiEnums.BudgetType` 9 个取值；`GovernancePersistenceIT.budgetPolicySupportsSceneAndAgentScopes` |
 | 多作用域一次性原子检查 | `RedisBudgetIT.sceneBudgetIsCheckedAtomicallyWithGlobal`——不出现「场景够、全局不够」却已占用场景额度的中间态 |
-| 预算策略 CRUD | `/api/admin/budget/*` 3 个接口，前端「预算管理」页 |
+| 预算策略读写 | `/api/admin/budget/*` 5 个接口（分页、状态、详情、改额度、流水），前端「预算管理」页 |
 | 预算调整留痕 | `ai_budget_transaction`（`RESERVE`/`SETTLE`/`RELEASE`/`EXPIRE`/`ADJUST`） |
 
 ### 2.4 预算执行（Budget Enforcement）— **通过**
