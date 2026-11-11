@@ -10,23 +10,33 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * 一个“教学用”的本地嵌入模型（EmbeddingModel 实现）。
+ * 【DEMO / 教学用】本地哈希嵌入模型，不是语义嵌入模型。
  *
- * 真实项目里，嵌入通常由 OpenAI / 本地 Ollama 等大模型完成（需要 API Key）。
- * 为了让你【零依赖、不填任何 Key】就能把整个 Spring AI + Milvus 流程跑起来，
- * 这里用“分词哈希 + L2 归一化”手写了一个 256 维向量。
+ * <p>目的：让整个 Spring AI + Milvus 链路在零 API Key、零外部服务的前提下跑通，
+ * 方便学习 VectorStore、集合、相似度检索等概念。它只能表达「字面 Token 重叠」，
+ * <b>不具备语义理解能力，禁止用于生产计费、效果评估或任何真实检索质量结论</b>。
+ * 生产请替换为 OpenAI / DeepSeek / Ollama 等真实 EmbeddingModel（见 README 第 5 节）。
  *
- * 它的特点：
- *  - 同样的词总是落到同一个维度（确定性）；
- *  - 词汇重叠越多的两段文本，向量越接近（余弦相似度越高）。
- * 因此足以演示“语义相似搜索”的核心思想，方便你专注于学习 Milvus + VectorStore 的玩法。
+ * <p>实现要点：
+ * <ul>
+ *   <li>ASCII 单词按词哈希；CJK 汉字按单字 + 相邻二元组（bigram）哈希，保证中文不会变成零向量；</li>
+ *   <li>哈希桶累加模拟词频，再作 L2 归一化，使点积等价于余弦相似度；</li>
+ *   <li>确定性：同样输入永远得到同样向量。</li>
+ * </ul>
  *
- * 想换成真实模型时，把这个 Bean 换成 OpenAiEmbeddingModel 即可（见 README 末尾）。
+ * <p>历史缺陷修复：旧实现用 {@code split("\\W+")} 分词，而 Java 的 {@code \w}
+ * 默认只匹配 ASCII，中文会被整段当作分隔符丢弃，导致纯中文查询生成零向量、检索完全失效。
  */
 @Component
 public class LocalHashingEmbeddingModel implements EmbeddingModel {
+
+    /** 匹配 ASCII 单词或单个 CJK 汉字，其余符号（标点、空白）一律忽略。 */
+    private static final Pattern TOKEN_PATTERN = Pattern.compile("[a-z0-9_]+|[\\u4e00-\\u9fff]");
 
     private final int dimension;
 
@@ -34,27 +44,17 @@ public class LocalHashingEmbeddingModel implements EmbeddingModel {
         this.dimension = dimension;
     }
 
-    /**
-     * 把一个文本变成固定维度的向量：对分词做哈希桶累加并做 L2 归一化。
-     * 这是 EmbeddingModel 的核心抽象方法（单条文本）。
-     */
+    /** 把文本变成固定维度向量：分词 → 哈希桶累加 → L2 归一化。 */
     @Override
     public float[] embed(String text) {
         float[] vector = new float[dimension];
         if (text == null || text.isBlank()) {
             return vector;
         }
-        // 按非单词字符切词，转小写，去除标点影响
-        String[] tokens = text.toLowerCase().split("\\W+");
-        for (String token : tokens) {
-            if (token.isEmpty()) {
-                continue;
-            }
-            // 把单词哈希到一个固定维度下标，并累加权重（词频思想）
+        for (String token : tokenize(text)) {
             int index = Math.floorMod(token.hashCode(), dimension);
             vector[index] += 1.0f;
         }
-        // L2 归一化，使向量长度恒为 1，方便用“点积=余弦相似度”比较
         double norm = 0.0;
         for (float v : vector) {
             norm += (double) v * v;
@@ -69,27 +69,58 @@ public class LocalHashingEmbeddingModel implements EmbeddingModel {
     }
 
     /**
-     * 单条文档的嵌入：直接复用文本的嵌入逻辑（EmbeddingModel 的抽象方法之一）。
+     * 教学用分词：ASCII 单词原样保留；CJK 汉字逐字切分，并把相邻两字组成 bigram，
+     * 让「向量」「数据」「数据库」这类中文短语也能产生可比较的重叠特征。
+     * 使用 Locale.ROOT 避免土耳其语等区域的大小写陷阱。
      */
+    private List<String> tokenize(String text) {
+        Matcher matcher = TOKEN_PATTERN.matcher(text.toLowerCase(Locale.ROOT));
+        List<String> units = new ArrayList<>();
+        while (matcher.find()) {
+            units.add(matcher.group());
+        }
+        List<String> tokens = new ArrayList<>(units.size() * 2);
+        for (int i = 0; i < units.size(); i++) {
+            String unit = units.get(i);
+            tokens.add(unit);
+            if (i + 1 < units.size() && isCjk(unit) && isCjk(units.get(i + 1))) {
+                tokens.add(unit + units.get(i + 1));
+            }
+        }
+        return tokens;
+    }
+
+    private boolean isCjk(String unit) {
+        if (unit.length() != 1) {
+            return false;
+        }
+        char c = unit.charAt(0);
+        return c >= '\u4e00' && c <= '\u9fff';
+    }
+
     @Override
     public float[] embed(Document document) {
         return embed(document.getText());
     }
 
     /**
-     * 批量嵌入入口（实现 Model 接口）：对每条文本调用 embed(String)。
-     * 注意：List<String> / List<Document> 的重载由 EmbeddingModel 接口默认实现提供，
-     * 不要自己重写（会有泛型擦除冲突）。
+     * 批量嵌入入口（Model 接口）。List&lt;String&gt; / List&lt;Document&gt; 的重载由接口默认实现提供，
+     * 不要自行重写，否则会产生泛型擦除冲突。
      */
     @Override
     public EmbeddingResponse call(EmbeddingRequest request) {
         List<String> instructions = request.getInstructions();
         List<Embedding> embeddings = new ArrayList<>(instructions.size());
         for (int i = 0; i < instructions.size(); i++) {
-            // Embedding 构造器必须带 index：new Embedding(float[] vector, Integer index)
             embeddings.add(new Embedding(embed(instructions.get(i)), i));
         }
         return new EmbeddingResponse(embeddings);
+    }
+
+    /** Spring AI 会用 dimensions() 校验向量库维度，显式返回避免依赖默认实现再算一次嵌入。 */
+    @Override
+    public int dimensions() {
+        return dimension;
     }
 
     public int getDimension() {

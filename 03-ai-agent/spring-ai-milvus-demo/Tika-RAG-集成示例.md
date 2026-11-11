@@ -3,7 +3,7 @@
 > 本示例是 `spring-ai-milvus-demo` 的**扩展模块**，演示如何用 Apache Tika 完成 RAG 的「文档摄取（Ingestion）」环节，
 > 把任意格式文件变成可检索的向量块，存入前面已搭好的 Milvus。
 >
-> 配套文档：[Apache-Tika-使用说明.md](../Apache-Tika-使用说明.md)（Tika 本身的安装与命令）、[README.md](./README.md)（Milvus 与整体工程）。
+> 配套文档：[Apache-Tika-使用说明.md](../rag-doc-qa-system/Apache-Tika-使用说明.md)（Tika 本身的安装与命令）、[README.md](./README.md)（Milvus 与整体工程）。
 
 ---
 
@@ -143,10 +143,10 @@ return sb.toString();   // 这个字符串直接作为 system/user 上下文发�
 
 | 方法 | 路径 | 说明 | 示例 |
 |---|---|---|---|
-| POST | `/api/rag/ingest` | 上传文件 → Tika 解析 → 切块 → 入库 | `curl -F file=@samples/rag-notes.md http://localhost:8080/api/rag/ingest` |
-| POST | `/api/rag/detect` | 仅检测 MIME 类型，不入库 | `curl -F file=@samples/milvus-guide.html http://localhost:8080/api/rag/detect` |
-| GET  | `/api/rag/search` | 召回最相关 chunk 列表 | `curl "http://localhost:8080/api/rag/search?q=Milvus%20索引&topK=3"` |
-| GET  | `/api/rag/context` | 把召回结果拼成 LLM 上下文 | `curl "http://localhost:8080/api/rag/context?q=RAG%20为什么减少幻觉&topK=3"` |
+| POST | `/api/rag/ingest` | 上传文件 → Tika 解析 → 切块 → 入库 | `curl -F file=@samples/rag-notes.md http://localhost:8091/api/rag/ingest` |
+| POST | `/api/rag/detect` | 仅检测 MIME 类型，不入库 | `curl -F file=@samples/milvus-guide.html http://localhost:8091/api/rag/detect` |
+| GET  | `/api/rag/search` | 召回最相关 chunk 列表 | `curl "http://localhost:8091/api/rag/search?q=Milvus%20索引&topK=3"` |
+| GET  | `/api/rag/context` | 把召回结果拼成 LLM 上下文 | `curl "http://localhost:8091/api/rag/context?q=RAG%20为什么减少幻觉&topK=3"` |
 
 ---
 
@@ -154,26 +154,26 @@ return sb.toString();   // 这个字符串直接作为 system/user 上下文发�
 
 ```bash
 # 0) 启动 Milvus + Attu（见 README 第 2 节），浏览器开 http://127.0.0.1:9530 可看数据
-cd /Users/beiluo/Documents/alProject/javalearn/docker
+cd /Users/beiluo/Documents/alProject/javalearn/infra/docker
 docker compose -f milvus-standalone-docker-compose.yml up -d
 docker run -d --name attu -p 9530:3000 --network milvus \
   -e MILVUS_URL=milvus-standalone:19530 zilliz/attu:v2.5.11
 
 # 1) 启动本工程
-cd /Users/beiluo/Documents/alProject/javalearn/spring-ai-milvus-demo
+cd /Users/beiluo/Documents/alProject/javalearn/03-ai-agent/spring-ai-milvus-demo
 mvn spring-boot:run
-# 浏览器开 http://localhost:8080
+# 浏览器开 http://localhost:8091
 
 # 2) 摄取样例文档（项目自带 samples/ 目录下有 txt/html/md 三个样例）
-curl -F file=@samples/spring-boot-intro.txt http://localhost:8080/api/rag/ingest
-curl -F file=@samples/milvus-guide.html   http://localhost:8080/api/rag/ingest
-curl -F file=@samples/rag-notes.md        http://localhost:8080/api/rag/ingest
+curl -F file=@samples/spring-boot-intro.txt http://localhost:8091/api/rag/ingest
+curl -F file=@samples/milvus-guide.html   http://localhost:8091/api/rag/ingest
+curl -F file=@samples/rag-notes.md        http://localhost:8091/api/rag/ingest
 
 # 3) 检索（验证 Tika 摄取真的进了 Milvus）
-curl "http://localhost:8080/api/rag/search?q=Milvus%20向量索引&topK=3"
+curl "http://localhost:8091/api/rag/search?q=Milvus%20向量索引&topK=3"
 
 # 4) 拼装给 LLM 的上下文
-curl "http://localhost:8080/api/rag/context?q=RAG%20怎么减少幻觉&topK=3"
+curl "http://localhost:8091/api/rag/context?q=RAG%20怎么减少幻觉&topK=3"
 ```
 
 完成后打开 Attu（http://127.0.0.1:9530），进入 `java_learning_docs` 集合，

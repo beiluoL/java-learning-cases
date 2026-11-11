@@ -3,6 +3,7 @@ package com.example.milvusdemo.service;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -28,6 +29,7 @@ import java.util.Map;
  * 检索/召回环节另见 retrieve() / buildContext()。
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "rag", name = "enabled", havingValue = "true")
 public class DocumentIngestionService {
 
     private final Tika tika = new Tika();
@@ -52,7 +54,8 @@ public class DocumentIngestionService {
         // 2) 文本 + 元数据提取：共用同一个 Metadata 对象，parseToString 解析时会把元数据填进去。
         //    注意：parseToString 会抛受检异常 TikaException，这里转成 IOException 向上传递。
         Metadata metadata = new Metadata();
-        metadata.set(Metadata.RESOURCE_NAME_KEY, filename);
+        // Tika 3.x 起该常量移动到 TikaCoreProperties，Metadata 类已不再提供
+        metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, filename);
         String fullText;
         try (InputStream in = file.getInputStream()) {
             fullText = tika.parseToString(in, metadata);
@@ -117,7 +120,11 @@ public class DocumentIngestionService {
     public String buildContext(String query, int topK) {
         StringBuilder sb = new StringBuilder();
         for (Map<String, Object> hit : retrieve(query, topK)) {
-            Object src = ((Map<?, ?>) hit.get("metadata")).getOrDefault("source", "?");
+            // Map<?, ?> 的 getOrDefault 第二参数会被 capture 成未知类型，改用 get + 判空
+            Object src = ((Map<?, ?>) hit.get("metadata")).get("source");
+            if (src == null) {
+                src = "?";
+            }
             sb.append("[来源: ").append(src).append("]\n").append(hit.get("content")).append("\n\n");
         }
         return sb.toString();

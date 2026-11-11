@@ -1,0 +1,46 @@
+# AI Token Cost Platform · MySQL 8 基础设施
+# 用法（在 infra/docker 目录）：
+#   docker compose -f ai-cost-compose.yml up -d
+#   docker compose -f ai-cost-compose.yml ps
+#   docker compose -f ai-cost-compose.yml down        # 停容器（保留数据卷）
+#
+# Redis 说明：本机已有 brew 启动的 Redis 8.8（127.0.0.1:6379），默认直接复用；
+# 若需容器化 Redis，取消下面 redis 服务的注释，并把应用 REDIS_PORT 改为 6380。
+# 关键：显式声明独立 project name 与网络，避免和同目录 milvus 编排共用默认项目而互相删网络。
+name: ai-cost
+
+services:
+  mysql:
+    image: mysql:8.0.36
+    container_name: ai-cost-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DB:-ai_cost}
+      TZ: UTC
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+00:00
+    ports:
+      - "${MYSQL_PORT:-13307}:3306"
+    volumes:
+      - ./volumes/ai-cost-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ai-cost-net
+    restart: unless-stopped
+
+networks:
+  ai-cost-net:
+    driver: bridge
+
+#  redis:
+#    image: redis:7-alpine
+#    container_name: ai-cost-redis
+#    ports:
+#      - "6380:6379"
+#    volumes:
+#      - ./volumes/ai-cost-redis:/data
+#    restart: unless-stopped

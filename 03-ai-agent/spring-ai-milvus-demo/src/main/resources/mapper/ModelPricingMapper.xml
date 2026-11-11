@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ai.token.pricing.mapper.ModelPricingMapper">
+
+    <!-- 按调用时刻取生效中的价格版本；历史账单保存版本快照，改价不影响历史成本 -->
+    <select id="findEffective" resultType="com.example.ai.token.pricing.entity.ModelPricing">
+        SELECT * FROM ai_model_pricing
+        WHERE model_name = #{modelName} AND model_type = #{modelType}
+          AND enabled = 1
+          AND effective_from &lt;= #{at}
+          AND (effective_to IS NULL OR effective_to &gt; #{at})
+        -- 优先精确供应商，其次允许同模型名的兼容价格（如 DeepSeek 走 OpenAI 兼容接口）
+        ORDER BY CASE WHEN provider = #{provider} THEN 0 ELSE 1 END,
+                 effective_from DESC, id DESC
+        LIMIT 1
+    </select>
+
+    <select id="listCurrent" resultType="com.example.ai.token.pricing.entity.ModelPricing">
+        SELECT * FROM ai_model_pricing ORDER BY provider, model_name, effective_from DESC
+    </select>
+
+    <select id="history" resultType="com.example.ai.token.pricing.entity.ModelPricing">
+        SELECT * FROM ai_model_pricing
+        <where>
+            <if test="modelName != null and modelName != ''"> model_name = #{modelName} </if>
+        </where>
+        ORDER BY model_name, effective_from DESC, id DESC
+    </select>
+
+    <select id="findById" resultType="com.example.ai.token.pricing.entity.ModelPricing">
+        SELECT * FROM ai_model_pricing WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.ai.token.pricing.entity.ModelPricing" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_model_pricing
+        (provider, model_name, model_type, input_price, output_price, cached_input_price,
+         currency, version, effective_from, effective_to, enabled, demo_flag)
+        VALUES
+        (#{provider}, #{modelName}, #{modelType}, #{inputPrice}, #{outputPrice}, #{cachedInputPrice},
+         #{currency}, #{version}, #{effectiveFrom}, #{effectiveTo}, #{enabled}, #{demoFlag})
+    </insert>
+
+    <!-- 只允许改价格字段与启停/失效时间，禁止改 provider/model/version 以保证历史可追溯 -->
+    <update id="update" parameterType="com.example.ai.token.pricing.entity.ModelPricing">
+        UPDATE ai_model_pricing
+        SET input_price = #{inputPrice}, output_price = #{outputPrice}, cached_input_price = #{cachedInputPrice},
+            effective_to = #{effectiveTo}, enabled = #{enabled}, demo_flag = #{demoFlag}
+        WHERE id = #{id}
+    </update>
+</mapper>

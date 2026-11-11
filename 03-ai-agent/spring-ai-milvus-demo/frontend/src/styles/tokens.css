@@ -1,0 +1,97 @@
+/* ==========================================================================
+   设计系统 Token —— 浅色专业 AI SaaS 后台风格
+   所有组件/页面只允许引用这里的变量，禁止散落硬编码色值与尺寸。
+   ========================================================================== */
+:root {
+  /* 品牌色 */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-soft: #eef2ff;
+  --color-primary-border: #c7d2fe;
+
+  /* 中性 / 表面 */
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-muted: #fafbfc;
+  --color-surface-hover: #f3f4f6;
+  --color-border: #e9ebef;
+  --color-border-strong: #d5d9e0;
+
+  /* 文字 */
+  --color-text: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
+  --color-text-inverse: #ffffff;
+
+  /* 语义色 */
+  --color-success: #059669;
+  --color-success-soft: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-warning: #d97706;
+  --color-warning-soft: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-info: #0284c7;
+  --color-info-soft: #f0f9ff;
+  --color-info-border: #bae6fd;
+  --color-demo: #7c3aed;
+  --color-demo-soft: #faf5ff;
+  --color-demo-border: #e9d5ff;
+
+  /* 间距 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* 圆角 */
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  /* 字号 */
+  --font-xs: 11px;
+  --font-sm: 12px;
+  --font-base: 13px;
+  --font-md: 14px;
+  --font-lg: 16px;
+  --font-xl: 20px;
+  --font-2xl: 27px;
+
+  /* 字重 */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.14);
+  --shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.16);
+
+  /* 布局 */
+  --sidebar-width: 232px;
+  --header-height: 60px;
+  --content-max-width: 1640px;
+
+  /* 动效 */
+  --transition: 160ms ease;
+
+  /* 图表色板 */
+  --chart-1: #4f46e5;
+  --chart-2: #0ea5e9;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --chart-6: #8b5cf6;
+  --chart-7: #06b6d4;
+  --chart-8: #ec4899;
+}

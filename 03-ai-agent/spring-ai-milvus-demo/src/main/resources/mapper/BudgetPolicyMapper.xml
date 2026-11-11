@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ai.token.budget.mapper.BudgetPolicyMapper">
+
+    <select id="list" resultType="com.example.ai.token.budget.entity.BudgetPolicy">
+        SELECT * FROM ai_budget_policy ORDER BY budget_type, target_id
+    </select>
+
+    <select id="findById" resultType="com.example.ai.token.budget.entity.BudgetPolicy">
+        SELECT * FROM ai_budget_policy WHERE id = #{id}
+    </select>
+
+    <select id="findScope" resultType="com.example.ai.token.budget.entity.BudgetPolicy">
+        SELECT * FROM ai_budget_policy
+        WHERE budget_type = #{budgetType} AND target_id = #{targetId} AND enabled = 1
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="com.example.ai.token.budget.entity.BudgetPolicy"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_budget_policy
+        (budget_type, target_id, daily_limit, monthly_limit, per_request_limit,
+         max_input_tokens, max_output_tokens, allow_overrun, enabled, currency, remark,
+         max_requests, max_concurrency, max_agent_steps, max_tool_calls, alert_threshold, overrun_policy)
+        VALUES
+        (#{budgetType}, #{targetId}, #{dailyLimit}, #{monthlyLimit}, #{perRequestLimit},
+         #{maxInputTokens}, #{maxOutputTokens}, #{allowOverrun}, #{enabled}, #{currency}, #{remark},
+         #{maxRequests}, #{maxConcurrency}, #{maxAgentSteps}, #{maxToolCalls}, #{alertThreshold}, #{overrunPolicy})
+    </insert>
+
+    <update id="update" parameterType="com.example.ai.token.budget.entity.BudgetPolicy">
+        UPDATE ai_budget_policy
+        SET daily_limit       = #{dailyLimit},
+            monthly_limit     = #{monthlyLimit},
+            per_request_limit = #{perRequestLimit},
+            max_input_tokens  = #{maxInputTokens},
+            max_output_tokens = #{maxOutputTokens},
+            allow_overrun     = #{allowOverrun},
+            enabled           = #{enabled},
+            remark            = #{remark},
+            max_requests      = #{maxRequests},
+            max_concurrency   = #{maxConcurrency},
+            max_agent_steps   = #{maxAgentSteps},
+            max_tool_calls    = #{maxToolCalls},
+            alert_threshold   = #{alertThreshold},
+            overrun_policy    = #{overrunPolicy}
+        WHERE id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ai.token.analytics.mapper.CostAnalyticsMapper">
+
+    <!-- 所有统计都带 created_at 范围，命中 idx_usage_created -->
+    <sql id="range">
+        WHERE created_at &gt;= #{from} AND created_at &lt; #{to}
+    </sql>
+
+    <select id="overview" resultType="java.util.HashMap">
+        SELECT COALESCE(SUM(total_cost), 0)          AS totalCost,
+               COALESCE(SUM(total_tokens), 0)        AS totalTokens,
+               COALESCE(SUM(input_tokens), 0)        AS inputTokens,
+               COALESCE(SUM(output_tokens), 0)       AS outputTokens,
+               COALESCE(SUM(cached_input_tokens), 0) AS cachedInputTokens,
+               COUNT(*)                              AS requestCount,
+               COALESCE(AVG(total_cost), 0)          AS avgCostPerRequest,
+               CASE WHEN COUNT(*) = 0 THEN 0
+                    ELSE SUM(CASE WHEN request_status = 'SUCCESS' THEN 1 ELSE 0 END) / COUNT(*) END AS successRate
+        FROM ai_token_usage
+        <include refid="range"/>
+    </select>
+
+    <select id="trend" resultType="java.util.HashMap">
+        SELECT
+        <choose>
+            <when test="granularity == 'HOUR'"> DATE_FORMAT(created_at, '%Y-%m-%d %H:00') </when>
+            <when test="granularity == 'MONTH'"> DATE_FORMAT(created_at, '%Y-%m-01') </when>
+            <otherwise> DATE_FORMAT(created_at, '%Y-%m-%d') </otherwise>
+        </choose> AS bucket,
+        COALESCE(SUM(total_cost), 0) AS totalCost,
+        COALESCE(SUM(input_tokens), 0) AS inputTokens,
+        COALESCE(SUM(output_tokens), 0) AS outputTokens,
+        COUNT(*) AS requestCount
+        FROM ai_token_usage
+        <include refid="range"/>
+        GROUP BY bucket
+        ORDER BY bucket ASC
+    </select>
+
+    <select id="models" resultType="java.util.HashMap">
+        SELECT provider, model_name AS modelName,
+               COUNT(*) AS requestCount,
+               COALESCE(SUM(input_tokens), 0) AS inputTokens,
+               COALESCE(SUM(output_tokens), 0) AS outputTokens,
+               COALESCE(SUM(total_cost), 0) AS totalCost,
+               COALESCE(AVG(total_cost), 0) AS avgCost
+        FROM ai_token_usage
+        <include refid="range"/>
+        GROUP BY provider, model_name
+        ORDER BY totalCost DESC
+    </select>
+
+    <select id="scenes" resultType="java.util.HashMap">
+        SELECT business_scene AS businessScene,
+               COUNT(*) AS requestCount,
+               COALESCE(SUM(total_tokens), 0) AS totalTokens,
+               COALESCE(SUM(total_cost), 0) AS totalCost
+        FROM ai_token_usage
+        <include refid="range"/>
+        GROUP BY business_scene
+        ORDER BY totalCost DESC
+    </select>
+
+    <select id="topModels" resultType="java.util.HashMap">
+        SELECT model_name AS name, COALESCE(SUM(total_cost), 0) AS value
+        FROM ai_token_usage
+        <include refid="range"/>
+        GROUP BY model_name
+        ORDER BY value DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="topUsers" resultType="java.util.HashMap">
+        SELECT user_id AS name, COALESCE(SUM(total_cost), 0) AS value
+        FROM ai_token_usage
+        <include refid="range"/>
+        GROUP BY user_id
+        ORDER BY value DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="hourlyTokenTrend" resultType="java.util.HashMap">
+        SELECT DATE_FORMAT(created_at, '%Y-%m-%d %H:00') AS bucket,
+               COALESCE(SUM(total_tokens), 0) AS totalTokens,
+               COALESCE(SUM(cached_input_tokens), 0) AS cachedInputTokens
+        FROM ai_token_usage
+        <include refid="range"/>
+        GROUP BY bucket
+        ORDER BY bucket ASC
+    </select>
+
+    <!-- 异常检测：Token 峰值与均值，用于识别「单次请求 Token 突增」 -->
+    <select id="tokenStats" resultType="java.util.HashMap">
+        SELECT COUNT(*)                              AS requestCount,
+               COALESCE(AVG(total_tokens), 0)        AS avgTokens,
+               COALESCE(MAX(total_tokens), 0)        AS maxTokens,
+               COALESCE(AVG(total_cost), 0)          AS avgCost
+        FROM ai_token_usage
+        <include refid="range"/>
+    </select>
+
+    <!-- 异常检测：按用户聚合，识别单用户成本突增 -->
+    <select id="userCost" resultType="java.util.HashMap">
+        SELECT user_id                     AS userId,
+               COUNT(*)                    AS requestCount,
+               COALESCE(SUM(total_cost), 0) AS totalCost
+        FROM ai_token_usage
+        <include refid="range"/>
+        GROUP BY user_id
+        ORDER BY totalCost DESC
+    </select>
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ai.token.infra.mapper.InfrastructureCostMapper">
+
+    <select id="list" resultType="com.example.ai.token.infra.entity.InfrastructureCost">
+        SELECT * FROM ai_infrastructure_cost ORDER BY period_start DESC, resource_type ASC
+    </select>
+
+    <select id="findById" resultType="com.example.ai.token.infra.entity.InfrastructureCost">
+        SELECT * FROM ai_infrastructure_cost WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.ai.token.infra.entity.InfrastructureCost"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_infrastructure_cost
+        (resource_type, resource_name, provider, period_start, period_end, amount, currency,
+         allocation_method, allocated_amount, request_count, demo_flag, remark)
+        VALUES
+        (#{resourceType}, #{resourceName}, #{provider}, #{periodStart}, #{periodEnd}, #{amount}, #{currency},
+         #{allocationMethod}, #{allocatedAmount}, #{requestCount}, #{demoFlag}, #{remark})
+    </insert>
+
+    <update id="update" parameterType="com.example.ai.token.infra.entity.InfrastructureCost">
+        UPDATE ai_infrastructure_cost
+        SET resource_name     = #{resourceName},
+            provider          = #{provider},
+            period_start      = #{periodStart},
+            period_end        = #{periodEnd},
+            amount            = #{amount},
+            allocation_method = #{allocationMethod},
+            demo_flag         = #{demoFlag},
+            remark            = #{remark}
+        WHERE id = #{id}
+    </update>
+
+    <select id="sumAmount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0) FROM ai_infrastructure_cost
+        WHERE period_start &lt;= #{end} AND period_end &gt;= #{start}
+    </select>
+
+    <select id="sumAllocated" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(allocated_amount), 0) FROM ai_infrastructure_cost
+        WHERE period_start &lt;= #{end} AND period_end &gt;= #{start}
+    </select>
+
+    <update id="updateAllocated">
+        UPDATE ai_infrastructure_cost
+        SET allocated_amount = #{allocatedAmount}, request_count = #{requestCount}
+        WHERE id = #{id}
+    </update>
+</mapper>

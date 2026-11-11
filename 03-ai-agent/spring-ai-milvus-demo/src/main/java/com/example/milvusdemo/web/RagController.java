@@ -25,6 +25,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/rag")
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "rag", name = "enabled", havingValue = "true")
 public class RagController {
 
     private final DocumentIngestionService ingestionService;

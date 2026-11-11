@@ -1,9 +1,35 @@
 server:
-  port: 8080
+  # 8080 已被工作区其他项目（blogagent-server）长期占用，本平台固定使用 8091，
+  # 一键脚本也只检查/管理 8091，绝不 kill 其它进程。
+  port: 8091
 
 spring:
   application:
     name: spring-ai-milvus-demo
+  # ===== MySQL：成本账单与预算配置的唯一持久化数据源 =====
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:13307}/${MYSQL_DB:ai_cost}?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 2
+      connection-timeout: 5000
+      validation-timeout: 3000
+  # ===== Redis：预算原子预扣 / 结算 =====
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      timeout: 3s
+      connect-timeout: 2s
+  # ===== Flyway：数据库版本化迁移 =====
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
   # 允许上传较大的文档（默认 1MB 太小，RAG 摄取 PDF/Word 时容易超限）
   servlet:
     multipart:
@@ -26,9 +52,98 @@ spring:
         indexType: IVF_FLAT
         metricType: COSINE
         # 应用启动时自动创建集合（学习 demo 省去手动建表步骤；生产环境一般设为 false 由运维管理）
-        initialize-schema: true
+        # 成本平台可独立于 Milvus 启动；需要演示 RAG 入库时设 MILVUS_INIT_SCHEMA=true 并先启动 Milvus
+        initialize-schema: ${MILVUS_INIT_SCHEMA:false}
 
-# 自定义配置：本地“教学用”嵌入模型的向量维度
+# ===== MyBatis：SQL 全部集中在 classpath:mapper/*.xml =====
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+
+# ===== 可观测性 =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
+
+# ===== AI 供应商（全部外部化，禁止硬编码 Key）=====
+# ai.provider = mock（默认，无 Key 也能启动） | openai（OpenAI 兼容接口，含 DeepSeek）
+ai:
+  provider: ${AI_PROVIDER:mock}
+  model: ${AI_MODEL:deepseek-chat}
+  api-key: ${AI_API_KEY:}
+  base-url: ${AI_BASE_URL:https://api.deepseek.com}
+  budget:
+    enabled: ${AI_BUDGET_ENABLED:true}
+    reservation-ttl-seconds: 300
+    default-daily-limit: 5.00
+    default-monthly-limit: 100.00
+    default-per-request-limit: 0.10
+  analytics:
+    max-range-days: 92
+    max-page-size: 100
+  # ===== 成本优化：所有开关都可关闭，便于做「优化前 vs 优化后」对照实验 =====
+  cache:
+    enabled: ${AI_CACHE_ENABLED:true}
+    ttl-seconds: 600
+    max-answer-chars: 12000
+    prompt-version: ${AI_PROMPT_VERSION:v1}
+  routing:
+    enabled: ${AI_ROUTING_ENABLED:true}
+    l1-model: ${AI_ROUTING_L1_MODEL:}
+    l2-model: ${AI_ROUTING_L2_MODEL:}
+    l3-model: ${AI_ROUTING_L3_MODEL:}
+    complex-char-threshold: 240
+    downgrade-at-level: 3
+  rate-limit:
+    enabled: ${AI_RATE_LIMIT_ENABLED:true}
+    per-user-per-minute: 30
+    per-user-per-hour: 300
+    per-user-per-day: 2000
+    per-model-concurrency: 8
+    global-concurrency: 32
+  protection:
+    enabled: true
+    consider-open-alerts: true
+    emergency-key: "ai:{governance}:emergency-stop"
+  optimization:
+    prompt-compression-enabled: true
+    context-compression-enabled: true
+    rag-context-limit-enabled: true
+    context-window-rounds: 4
+    max-context-tokens: 1500
+    rag-top-k: 4
+    rag-similarity-threshold: 0.2
+    rag-candidate-limit: 12
+    max-output-tokens: 800
+    max-output-tokens-simple: 400
+    embedding-dedup-enabled: true
+  agent:
+    max-steps: 8
+    max-tool-calls: 16
+    max-tokens: 60000
+    max-cost: 0.20
+    max-duration-seconds: 120
+    max-repeated-tool-calls: 3
+  retry:
+    max-attempts: 2
+    backoff-ms: 300
+    # 超时不重试：无法确认供应商是否已计费，重试可能重复扣费
+    retry-on-timeout: false
+
+# ===== RAG 可选装配 =====
+# 默认 false：成本平台可独立于 Milvus 启动（RAG 端点不装配，问答自动降级为无知识库）。
+# 设为 true 时需先启动 Milvus，RagConfiguration 会恢复 MilvusVectorStore 与原有 RAG 端点/服务。
+rag:
+  enabled: ${RAG_ENABLED:false}
+
+# 自定义配置：本地"教学用"嵌入模型的向量维度
 app:
   embedding:
     dimension: 256

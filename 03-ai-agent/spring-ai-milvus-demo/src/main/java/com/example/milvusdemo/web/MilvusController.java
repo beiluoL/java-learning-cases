@@ -20,6 +20,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/milvus")
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "rag", name = "enabled", havingValue = "true")
 public class MilvusController {
 
     private final MilvusLearningService service;

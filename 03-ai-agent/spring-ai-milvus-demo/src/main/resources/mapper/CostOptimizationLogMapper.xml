@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ai.token.cost.mapper.CostOptimizationLogMapper">
+
+    <insert id="insert" parameterType="com.example.ai.token.cost.entity.CostOptimizationLog"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_cost_optimization_log
+        (request_id, strategy, before_tokens, after_tokens, saved_tokens, saved_cost,
+         measure_kind, quality_note, detail)
+        VALUES
+        (#{requestId}, #{strategy}, #{beforeTokens}, #{afterTokens}, #{savedTokens}, #{savedCost},
+         #{measureKind}, #{qualityNote}, #{detail})
+    </insert>
+
+    <!-- 按策略聚合收益；调用方必须按 measure_kind 区分展示，禁止把 ESTIMATED 当真实节省 -->
+    <select id="sumByStrategy" resultType="java.util.HashMap">
+        SELECT strategy                                    AS strategy,
+               measure_kind                                AS measureKind,
+               COUNT(*)                                    AS executionCount,
+               COALESCE(SUM(before_tokens), 0)             AS beforeTokens,
+               COALESCE(SUM(after_tokens), 0)              AS afterTokens,
+               COALESCE(SUM(saved_tokens), 0)              AS savedTokens,
+               COALESCE(SUM(saved_cost), 0)                AS savedCost,
+               MAX(created_at)                             AS lastExecutedAt
+        FROM ai_cost_optimization_log
+        WHERE created_at &gt;= #{from} AND created_at &lt; #{to}
+        GROUP BY strategy, measure_kind
+        ORDER BY savedCost DESC
+    </select>
+
+    <select id="history" resultType="com.example.ai.token.cost.entity.CostOptimizationLog">
+        SELECT * FROM ai_cost_optimization_log
+        <where>
+            <if test="strategy != null and strategy != ''"> AND strategy = #{strategy} </if>
+        </where>
+        ORDER BY created_at DESC, id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countHistory" resultType="long">
+        SELECT COUNT(*) FROM ai_cost_optimization_log
+        <where>
+            <if test="strategy != null and strategy != ''"> AND strategy = #{strategy} </if>
+        </where>
+    </select>
+
+    <select id="sumSavedCost" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(saved_cost), 0) FROM ai_cost_optimization_log
+        WHERE created_at &gt;= #{from} AND created_at &lt; #{to}
+    </select>
+</mapper>

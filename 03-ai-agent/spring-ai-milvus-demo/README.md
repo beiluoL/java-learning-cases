@@ -1,11 +1,97 @@
-# Spring AI + Milvus 学习示例
+# 企业级大模型成本控制与治理平台
 
-一个最小的、可零依赖运行的 **Spring Boot + Spring AI + Milvus** 案例，用来理解
-「文本 → 向量 → 存入向量数据库 → 相似度检索（RAG 的核心）」这条链路。
+一个可本地完整跑通的 **LLM 成本治理平台**：把「钱花在哪 → 找浪费 → 压下来 → 设限 → 拦住 → 复盘」做成闭环，
+同时保留原有的 **Spring AI + Milvus RAG** 学习示例（代码一行未删，按开关装配）。
 
-> 技术栈：Java 17 / Spring Boot 3.4.5 / Spring AI 1.0.0 GA / Milvus 2.5.27（Docker）
+> 技术栈：Java 17 / Spring Boot 3.4.5 / MyBatis / MySQL 8 / Redis 8 / Flyway / Vue3 + TS + Vite / Spring AI 1.0.0 GA / Milvus 2.5.27
 
 ---
+
+## 0. 平台概览
+
+| 项 | 值 |
+|---|---|
+| 后端端口 | **8091**（8080 属于工作区其他项目，脚本不会 kill 它） |
+| 前端 | `frontend/`（Vue3 + TS + Vite，dev 端口 **5174**，代理 `/api` → 8091），**10 个页面 / 3 个导航组** |
+| 数据库 | MySQL 8（Docker，宿主 **13307**），Flyway 管理 V1~V5 迁移，**13 张业务表** |
+| 预算控制 | Redis 8（本机 6379），4 个 Lua 脚本做原子多作用域预扣 |
+| 模型 | 默认 `AI_PROVIDER=mock`（无 Key 可启动）；`openai` 走 OpenAI 兼容接口（含 DeepSeek，已实测） |
+| 管理接口 | `/api/admin/**`，本机免令牌；配置 `AI_ADMIN_TOKEN` 后需 `X-Admin-Token` |
+| 测试 | **72 项**：48 单测 + 24 集成（真实 Redis / 真实 MySQL） |
+| 核心文档 | `docs/audit/PROJECT_AUDIT.md`、`docs/architecture/AI_COST_ARCHITECTURE.md`、`docs/api/AI_COST_API.md`、`docs/acceptance/FINAL_ACCEPTANCE_REPORT.md` |
+
+### 0.1 八大能力
+
+| # | 能力 | 关键实现 | 前端页面 |
+|---|---|---|---|
+| 1 | **成本核算** | 三段计费（input/output/cached）、`CostKind` 三口径（`ACTUAL`/`ALLOCATED`/`SAVED`）、追加式账本 | 成本构成 |
+| 2 | **成本优化** | 8 条策略（Prompt/上下文压缩、RAG 上下文限制、模型路由、响应缓存、Embedding 去重、输出上限、Prompt 缓存），收益分 `MEASURED`/`COUNTERFACTUAL`/`ESTIMATED` 三口径 | 优化中心 |
+| 3 | **预算管理（九级）** | `GLOBAL`/`USER`/`MODEL`/`DAILY`/`MONTHLY`/`SCENE`/`KNOWLEDGE_BASE`/`AGENT`/`REQUEST` | 预算管理 |
+| 4 | **预算执行** | Lua 原子预扣（1e-8 整数运算）、幂等、过期回收、100 并发不超支 | — |
+| 5 | **成本预警** | 19 种告警类型、**五档阈值 50/70/85/95/100%**、消费速度、6 条异常检测、去重/确认/自动恢复 | 预警中心 |
+| 6 | **自动保护** | 五级（`NORMAL`/`WARNING`/`LIMIT`/`SEVERE`/`BLOCKED`）、5 条种子规则、模型降档、紧急开关 + 审计 | 系统保护策略 |
+| 7 | **成本分析** | 构成拆解、用户/模型排行、月度预测、日耗尽 ETA、五维度日汇总、分页与跨度限制 | 成本总览 / Token 分析 / 模型成本 |
+| 8 | **Dashboard** | 3 组导航 10 页，全部走真实接口，无写死统计值 | 请求追踪（运维） |
+
+### 0.2 一轮请求的完整链路
+
+```
+保护等级判定 → 模型路由(L1/L2/L3) → 限流/并发闸门 → 响应缓存
+   → 单次上限 → 预算预扣(Redis Lua) → Agent 闸门 → RAG 检索
+   → Prompt/上下文压缩 → 模型调用 → Usage 采集 → 结算(MySQL)
+   → 优化收益回填 → 成本账本 → 日汇总 → 告警/阈值评估
+```
+
+### 0.3 五档阈值与五级保护
+
+| 使用率 | 告警等级 | 保护动作 | 保护等级 |
+|---|---|---|---|
+| 50% | WARNING | NOTIFY | — |
+| 70% | WARNING | NOTIFY | — |
+| 85% | HIGH | DOWNGRADE_MODEL | 3 LIMIT |
+| 95% | CRITICAL | DISABLE_AGENT | 4 SEVERE |
+| 100% | BLOCKED | BLOCK_REQUEST | 5 BLOCKED |
+
+> 实测记录（真实 Redis 占用 + 真实 MySQL 额度调整）：80% → 50%+70%；96.97% → 85%+95%；106.67% → 100%；
+> 连续 3 次评估不重复建行；超限后 `/api/ai/chat` 返回 `40302`；恢复后 5 档全部 `RESOLVED` 且请求放行。
+> 详见 `docs/acceptance/TEST_REPORT.md` 第 6、7 节。
+
+### 0.4 RAG 仍是可选装配
+
+`spring-ai-starter-vector-store-milvus` 会在启动期强制连 Milvus，因此默认 `rag.enabled=false`，
+成本平台可独立启动；设 `RAG_ENABLED=true` 并先起 Milvus，`RagConfiguration` 会恢复原有 4 个 RAG Bean
+与 `/api/milvus/**`、`/api/rag/**` 端点（**原代码一行未删**）。决策见 `docs/architecture/ADR/ADR-001-rag-optional-assembly.md`。
+
+### 0.5 快速启动
+
+```bash
+# 1. 起 MySQL（仓库根 infra/docker/）
+cd ../../infra/docker && docker compose -f ai-cost-compose.yml up -d
+# 2. 回项目根，双击或执行一键脚本
+./start.command          # macOS；Windows 双击 start.bat
+# 3. 打开前端
+open http://localhost:5174
+```
+
+一键脚本 `start/stop/restart` 的 `.command`（macOS）与 `.bat`（Windows）共 6 个：PID 文件精确关停，
+端口占用只拒绝不清理，**不含 `pkill` / `kill -9` / 按端口杀进程**。详细部署与故障排查见
+`docs/deployment/LOCAL_DEPLOYMENT.md`。
+
+启动后建议先跑一遍自检（只读，34 个管理接口全部断言 `code=0`）：
+
+```bash
+bash samples/verify-admin-endpoints.sh
+```
+
+> ⚠️ 手动跑 Maven 必须先 `export JAVA_HOME=.../corretto-17.0.14/Contents/Home`：
+> JDK 23+ 默认关闭注解处理，Lombok 会静默失效并报数百处「找不到符号 `getXxx()`」。
+
+---
+
+# 附录：原始 RAG 学习示例（代码保留，按开关装配）
+
+> 以下 1~6 节是最初的「文本 → 向量 → Milvus → 相似度检索」学习教程，**代码全部保留**。
+> 默认 `rag.enabled=false` 时这些端点不装配，需要时按第 2 节起 Milvus 并设 `RAG_ENABLED=true`。
 
 ## 1. 你能学到什么
 
@@ -26,7 +112,7 @@
 Milvus 以 Docker 方式运行（官方 standalone 版，包含 etcd + MinIO + Milvus 三个容器）。
 
 ```bash
-cd docker
+cd ../../infra/docker
 docker compose -f milvus-standalone-docker-compose.yml up -d
 ```
 
@@ -46,7 +132,7 @@ docker compose -f milvus-standalone-docker-compose.yml ps
 | `9530` | HTTP | ✅ **Attu 可视化页面** | 装了 Attu 后，浏览器开 `http://127.0.0.1:9530` 才是能“看到”Milvus 的网页 |
 
 > 💡 **结论：Milvus 本身没有网页界面。** 想用浏览器看集合/向量/检索结果，要装官方可视化工具 **Attu**（见下方）。`19530` 那个 404 不是故障，是协议不对（它是 gRPC 端口）。
-> 更完整的 Attu 图文教程见仓库根目录 **`Attu使用说明.md`**。
+> 更完整的 Attu 图文教程见 **`03-ai-agent/milvus-java-minimal-demo/Attu使用说明.md`**（目录重组后的实际位置）。
 
 ### 2.1 安装 Attu（Milvus 网页可视化）
 
@@ -80,23 +166,24 @@ docker compose -f milvus-standalone-docker-compose.yml down -v       # 连数据
 ## 3. 运行本示例
 
 ```bash
-cd spring-ai-milvus-demo
-mvn spring-boot:run
+cd 03-ai-agent/spring-ai-milvus-demo
+export JAVA_HOME=/Users/beiluo/Library/Java/JavaVirtualMachines/corretto-17.0.14/Contents/Home
+RAG_ENABLED=true mvn spring-boot:run
 ```
 
-应用启动时会自动在 Milvus 中创建集合 `java_learning_docs`。
+`RAG_ENABLED=true` 是必须的（默认 `false` 时这些端点不装配）。应用启动时会自动在 Milvus 中创建集合 `java_learning_docs`。
 
 ### 3.1 写入示例文档
 
 ```bash
-curl -X POST http://localhost:8080/api/milvus/seed
+curl -X POST http://localhost:8091/api/milvus/seed
 # => 已写入 5 条文档到集合 java_learning_docs
 ```
 
 ### 3.2 相似度检索（核心演示）
 
 ```bash
-curl "http://localhost:8080/api/milvus/search?q=向量数据库怎么用&topK=3"
+curl "http://localhost:8091/api/milvus/search?q=向量数据库怎么用&topK=3"
 ```
 
 返回结果会按“与查询语义最接近”排序，例如会优先返回包含
@@ -105,7 +192,7 @@ curl "http://localhost:8080/api/milvus/search?q=向量数据库怎么用&topK=3"
 ### 3.3 直观看「文本 → 向量」
 
 ```bash
-curl "http://localhost:8080/api/milvus/embed?text=Java面向对象编程"
+curl "http://localhost:8091/api/milvus/embed?text=Java面向对象编程"
 # => {"dimension":256,"first10":[...],"norm":1.0}
 ```
 
@@ -118,13 +205,13 @@ curl "http://localhost:8080/api/milvus/embed?text=Java面向对象编程"
 
 ```bash
 # 用项目自带的样例文件试（samples/ 下有 txt/html/md 三个样例）
-curl -F file=@samples/spring-boot-intro.txt http://localhost:8080/api/rag/ingest
-curl -F file=@samples/milvus-guide.html   http://localhost:8080/api/rag/ingest
-curl -F file=@samples/rag-notes.md        http://localhost:8080/api/rag/ingest
+curl -F file=@samples/spring-boot-intro.txt http://localhost:8091/api/rag/ingest
+curl -F file=@samples/milvus-guide.html   http://localhost:8091/api/rag/ingest
+curl -F file=@samples/rag-notes.md        http://localhost:8091/api/rag/ingest
 
 # 召回 / 拼装上下文（喂给 LLM 用）
-curl "http://localhost:8080/api/rag/search?q=Milvus%20向量索引&topK=3"
-curl "http://localhost:8080/api/rag/context?q=RAG%20怎么减少幻觉&topK=3"
+curl "http://localhost:8091/api/rag/search?q=Milvus%20向量索引&topK=3"
+curl "http://localhost:8091/api/rag/context?q=RAG%20怎么减少幻觉&topK=3"
 ```
 
 端点：`POST /api/rag/ingest`（上传入库）、`POST /api/rag/detect`（仅检测类型）、
@@ -140,20 +227,42 @@ curl "http://localhost:8080/api/rag/context?q=RAG%20怎么减少幻觉&topK=3"
 
 ```
 spring-ai-milvus-demo
-├── pom.xml                     # 依赖：web + spring-ai-milvus + tika-core + tika-parsers-standard-package
-├── src/main/resources/application.yml   # 连接 Milvus + 集合/维度/索引 + 上传大小限制
-├── samples/                    # 供 /api/rag/ingest 上传演示的样例文件（txt/html/md）
-├── Tika-RAG-集成示例.md        # 【RAG】Tika 接入 RAG 的完整图文教程
-└── src/main/java/com/example/milvusdemo
-    ├── DemoApplication.java            # 启动类（自动装配 MilvusVectorStore）
-    ├── embed
-    │   └── LocalHashingEmbeddingModel.java   # 本地“教学用”EmbeddingModel（无需 API Key）
-    ├── service
-    │   ├── MilvusLearningService.java         # 写入文档 / 相似度检索 / 向量化演示
-    │   └── DocumentIngestionService.java      # 【RAG】Tika 解析 + 分块 + 入库 + 召回
-    └── web
-        ├── MilvusController.java              # Milvus 基础演示 REST 接口
-        └── RagController.java                 # 【RAG】摄取/检测/检索/上下文接口
+├── pom.xml                              # web + spring-ai-milvus + tika + mybatis + flyway + actuator
+├── start/stop/restart.command|.bat      # 6 个一键脚本（PID 精确关停）
+├── samples/                             # RAG 上传样例 + verify-alert-*.sh 演练脚本
+├── src/main/resources
+│   ├── application.yml                  # 端口/MySQL/Redis/Flyway/ai.* 全量配置
+│   ├── db/migration/V1~V5*.sql          # 13 张表 + 种子数据
+│   ├── lua/budget_{reserve,settle,release,cleanup}.lua
+│   └── mapper/*.xml                     # 13 个 Mapper XML
+├── frontend/                            # Vue3 + TS + Vite，10 个页面
+│   └── src/{views,api,router,components,constants.ts}
+├── docs/                                # 审计 / 架构 / API / 数据库 / 部署 / 验收
+└── src/main/java/com/example
+    ├── ai/                              # 【治理平台】93 个文件
+    │   ├── common/                      # ApiResponse / AiEnums / MoneyScale / Views / PageResult
+    │   ├── config/                      # AiProperties / AiModelConfig / AdminAccessInterceptor / RagConfiguration
+    │   ├── chat/                        # AiChatService（16 步链路主干）
+    │   ├── optimize/                     # ModelRouter / PromptOptimizer / ContextCompressor /
+    │   │                                #   RagContextOptimizer / ResponseCacheService /
+    │   │                                #   EmbeddingCacheService / TokenEstimator
+    │   ├── guard/                       # AIRequestProtectionService（限流/并发/熔断）
+    │   ├── token/usage/                 # TokenUsageCollector + ProviderUsageAdapter
+    │   ├── token/pricing/               # ModelPricingService
+    │   ├── token/budget/                # TokenBudgetService / BudgetReconciler / BudgetSettledEvent
+    │   ├── token/cost/                  # CostCalculator / CostLedgerService / CostAlertService /
+    │   │                                #   BudgetThresholdAlertService / AnomalyDetectionService /
+    │   │                                #   SpendForecastService / CostProtectionEngine
+    │   ├── token/analytics/             # CostAnalyticsService / CostGovernanceService / DailySummaryService
+    │   ├── token/agent/                 # AgentCostTracker（步数/工具/成本三重上限）
+    │   ├── token/infra/                 # InfrastructureCostService（分摊，不入 apiCost）
+    │   ├── identity/                    # UserIdentityProvider + Demo 实现
+    │   └── metrics/                     # AiMetrics
+    └── milvusdemo/                      # 【原 RAG 示例】6 个文件，一行未删
+        ├── DemoApplication.java         # 启动类
+        ├── embed/LocalHashingEmbeddingModel.java
+        ├── service/{MilvusLearningService,DocumentIngestionService}.java
+        └── web/{MilvusController,RagController}.java
 ```
 
 ---
@@ -198,5 +307,23 @@ spring:
 
 - **维度不一致**：`application.yml` 里的 `embeddingDimension` 必须等于 `EmbeddingModel` 输出维度，
   否则启动或插入时会报维度不匹配。
-- **Milvus 没起来**：应用启动会连 Milvus；若 Milvus 没 healthy，会启动失败——先确认 `docker compose ps` 状态。
+- **Milvus 没起来**：成本平台默认 `rag.enabled=false`，**不连 Milvus 也能启动**；只有显式 `RAG_ENABLED=true` 恢复 RAG 时才需要先确认 `docker compose ps` 中 Milvus 为 healthy。
 - **集合已存在**：重复 `seed` 是“追加”而非“覆盖”，多次写入会有重复文档。可在 Milvus 里 drop 集合后重来。
+
+---
+
+## 7. 平台侧常见坑
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| `mvn compile` 报数百处「找不到符号 `getXxx()`」 | JDK 23+ 默认关闭注解处理，Lombok 静默失效 | `export JAVA_HOME=.../corretto-17.0.14/Contents/Home` |
+| 调用返回 `40301 预算不足` | 日预算耗尽 | 调高 `/api/admin/budget` 额度，或等跨天分键重置；被拒账单也会落库 |
+| 调用返回 `40302 保护等级 5` | 使用率 >100% 或紧急开关停用 | 查 `/api/admin/cost-protection/status`；紧急开关用 `/cost-protection/resume` 恢复 |
+| 调用返回 `50301` | Redis 不可用，预算安全失败（**预期保护行为，不是放行**） | `redis-cli ping` 恢复后重试 |
+| 同一个阈值反复告警 / 五档被合并成一条 | 告警指纹缺判别位 | 已修：指纹含 `discriminator`（`"50.00%"` 形式），见 `docs/api/AI_COST_API.md` |
+| 紧急开关恢复后等级卡在 `SEVERE` | 旧版本保护自锁缺陷 | 已修（`ADR-002`），`CostProtectionEngineTest` 4 例值守 |
+| `curl localhost` 连不上 | 本机 `HTTP_PROXY` | 加 `--noproxy '*'` |
+| 容器内 mysql 中文变 `?????` | 客户端字符集 | 加 `--default-character-set=utf8mb4`；表列确为 `utf8mb4` |
+| 页面数据为空但接口有数据 | 前端代理未生效 | 确认 Vite `strictPort` 在 5174、`/api` 代理指向 8091 |
+
+更多排查见 `docs/deployment/LOCAL_DEPLOYMENT.md` 第 11 节。

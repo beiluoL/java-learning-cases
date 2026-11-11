@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ai.token.cost.mapper.CostProtectionRuleMapper">
+
+    <select id="list" resultType="com.example.ai.token.cost.entity.CostProtectionRule">
+        SELECT * FROM ai_cost_protection_rule ORDER BY priority ASC, id ASC
+    </select>
+
+    <select id="listEnabled" resultType="com.example.ai.token.cost.entity.CostProtectionRule">
+        SELECT * FROM ai_cost_protection_rule WHERE enabled = 1 ORDER BY priority ASC, id ASC
+    </select>
+
+    <select id="findByCode" resultType="com.example.ai.token.cost.entity.CostProtectionRule">
+        SELECT * FROM ai_cost_protection_rule WHERE rule_code = #{ruleCode}
+    </select>
+
+    <update id="update" parameterType="com.example.ai.token.cost.entity.CostProtectionRule">
+        UPDATE ai_cost_protection_rule
+        SET protection_level = #{r.protectionLevel},
+            threshold_value  = #{r.thresholdValue},
+            action           = #{r.action},
+            priority         = #{r.priority},
+            enabled          = #{r.enabled},
+            rule_name        = #{r.ruleName},
+            remark           = #{r.remark}
+        WHERE rule_code = #{r.ruleCode}
+    </update>
+
+    <insert id="insertLog" parameterType="com.example.ai.token.cost.entity.CostProtectionLog"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_cost_protection_log
+        (action, from_level, to_level, target_type, target_id, operator, reason, detail, restored_at)
+        VALUES
+        (#{action}, #{fromLevel}, #{toLevel}, #{targetType}, #{targetId}, #{operator}, #{reason}, #{detail}, #{restoredAt})
+    </insert>
+
+    <select id="listLogs" resultType="com.example.ai.token.cost.entity.CostProtectionLog">
+        SELECT * FROM ai_cost_protection_log ORDER BY created_at DESC, id DESC LIMIT #{limit}
+    </select>
+
+    <select id="findActiveEmergency" resultType="com.example.ai.token.cost.entity.CostProtectionLog">
+        SELECT * FROM ai_cost_protection_log
+        WHERE action = 'EMERGENCY_STOP' AND restored_at IS NULL
+        ORDER BY id DESC LIMIT 1
+    </select>
+
+    <update id="restoreEmergency">
+        UPDATE ai_cost_protection_log SET restored_at = #{restoredAt} WHERE id = #{id}
+    </update>
+</mapper>

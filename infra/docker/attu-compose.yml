@@ -24,9 +24,10 @@ services:
     # 后端连接 Milvus 的地址：容器名 + gRPC 端口 19530
     environment:
       MILVUS_URL: milvus-standalone:19530
-    # 依赖 Milvus 已启动（仅控制启动顺序，不保证内部就绪）
-    depends_on:
-      - milvus-standalone
+    # 注意：milvus-standalone 由另一个 compose 文件创建，不能写 depends_on，
+    # 否则 `docker compose config` 会报 "depends on undefined service"。
+    # 前置条件：先执行 `docker compose -f milvus-standalone-docker-compose.yml up -d`，
+    # 并等待 milvus-standalone 健康检查为 healthy，再启动本文件。
     restart: unless-stopped
 
 # 复用 Milvus standalone 创建的外部网络（不要新建，否则连不上 Milvus）

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ai.token.cost.mapper.CostLedgerMapper">
+
+    <!-- 只插不改：历史账务不允许 UPDATE/DELETE，冲正走 ADJUST 反向流水 -->
+    <insert id="insert" parameterType="com.example.ai.token.cost.entity.CostLedger"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_cost_ledger
+        (entry_no, entry_type, cost_kind, request_id, trace_id, user_id, agent_id, knowledge_base_id,
+         business_scene, provider, model_name, quantity, amount, currency, pricing_version, remark, occurred_at)
+        VALUES
+        (#{entryNo}, #{entryType}, #{costKind}, #{requestId}, #{traceId}, #{userId}, #{agentId}, #{knowledgeBaseId},
+         #{businessScene}, #{provider}, #{modelName}, #{quantity}, #{amount}, #{currency}, #{pricingVersion},
+         #{remark}, #{occurredAt})
+    </insert>
+
+    <select id="listRecent" resultType="com.example.ai.token.cost.entity.CostLedger">
+        SELECT * FROM ai_cost_ledger ORDER BY occurred_at DESC, id DESC LIMIT #{limit}
+    </select>
+
+    <select id="listByRequestId" resultType="com.example.ai.token.cost.entity.CostLedger">
+        SELECT * FROM ai_cost_ledger WHERE request_id = #{requestId} ORDER BY id ASC
+    </select>
+
+    <select id="sumByKind" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0) FROM ai_cost_ledger
+        WHERE cost_kind = #{costKind}
+          AND occurred_at &gt;= #{from} AND occurred_at &lt; #{to}
+    </select>
+
+    <select id="breakdown" resultType="java.util.HashMap">
+        SELECT entry_type          AS entryType,
+               cost_kind           AS costKind,
+               COUNT(*)            AS entryCount,
+               COALESCE(SUM(amount), 0) AS amount
+        FROM ai_cost_ledger
+        WHERE cost_kind = #{costKind}
+          AND occurred_at &gt;= #{from} AND occurred_at &lt; #{to}
+        GROUP BY entry_type, cost_kind
+        ORDER BY amount DESC
+    </select>
+</mapper>

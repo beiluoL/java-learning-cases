@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
  *  - similaritySearch() 会把查询文本也向量化，然后在 Milvus 里找最邻近的向量。
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "rag", name = "enabled", havingValue = "true")
 public class MilvusLearningService {
 
     private final VectorStore vectorStore;
