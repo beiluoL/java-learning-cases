@@ -225,45 +225,65 @@ curl "http://localhost:8091/api/rag/context?q=RAG%20怎么减少幻觉&topK=3"
 
 ## 4. 项目结构
 
+> 目录与包结构的**完整规范**见 [`docs/engineering/DIRECTORY_STRUCTURE.md`](docs/engineering/DIRECTORY_STRUCTURE.md)。
+> 下面是速查版。
+
 ```
 spring-ai-milvus-demo
 ├── pom.xml                              # web + spring-ai-milvus + tika + mybatis + flyway + actuator
-├── start/stop/restart.command|.bat      # 6 个一键脚本（PID 精确关停）
-├── samples/                             # RAG 上传样例 + verify-alert-*.sh 演练脚本
+├── start/stop/restart.command|.bat      # 6 个一键脚本（PID 精确关停，双击可用）
+├── scripts/                             # 【质量门禁】verify.sh 唯一入口 + 3 个子检查
+├── samples/                             # RAG 上传样例 + verify-*.sh 演练脚本
 ├── src/main/resources
 │   ├── application.yml                  # 端口/MySQL/Redis/Flyway/ai.* 全量配置
 │   ├── db/migration/V1~V5*.sql          # 13 张表 + 种子数据
 │   ├── lua/budget_{reserve,settle,release,cleanup}.lua
 │   └── mapper/*.xml                     # 13 个 Mapper XML
 ├── frontend/                            # Vue3 + TS + Vite，10 个页面
-│   └── src/{views,api,router,components,constants.ts}
-├── docs/                                # 审计 / 架构 / API / 数据库 / 部署 / 验收
+│   └── src/{views,api,router,components,composables,stores,styles,utils}
+├── docs/
+│   ├── engineering/                     # 【工程规范】10 份规范 + 审计报告（先读 CODE_STANDARDS.md）
+│   ├── architecture/                    # 架构设计 + ADR
+│   ├── api/ database/ deployment/ acceptance/
 └── src/main/java/com/example
-    ├── ai/                              # 【治理平台】93 个文件
-    │   ├── common/                      # ApiResponse / AiEnums / MoneyScale / Views / PageResult
+    ├── ai/                              # 【治理平台】93 个文件，按业务域分包
+    │   ├── chat/                        # 对话主链路：AiChatController / AiChatService / MockChatModel
+    │   ├── token/                       # Token 用量采集（只管采集，不管成本）
+    │   ├── cost/                        # 成本计算 / 成本账本 / 基础设施分摊 / 花费预测
+    │   ├── budget/                      # 预算策略 / 预扣结算释放 / 对账（BudgetPolicyService、TokenBudgetService）
+    │   ├── protection/                  # 成本保护引擎 / 请求级限流拒绝 / 紧急停用
+    │   ├── optimization/                # 省钱手段：模型路由 / Prompt 压缩 / 缓存 / Token 估算
+    │   ├── pricing/                     # 模型价格表与版本管理
+    │   ├── alert/                       # 告警产生 / 阈值判断 / 异常检测 / 告警中心
+    │   ├── analytics/                   # 统计分析 / 日报聚合 / 治理看板
+    │   ├── agent/                       # Agent 多步成本追踪
+    │   ├── provider/adapter/            # 上游厂商用量适配器（OpenAI / Mock）
+    │   ├── common/                      # ApiResponse / AiEnums / MoneyScale / Views / PageResult / TraceContext
     │   ├── config/                      # AiProperties / AiModelConfig / AdminAccessInterceptor / RagConfiguration
-    │   ├── chat/                        # AiChatService（16 步链路主干）
-    │   ├── optimize/                     # ModelRouter / PromptOptimizer / ContextCompressor /
-    │   │                                #   RagContextOptimizer / ResponseCacheService /
-    │   │                                #   EmbeddingCacheService / TokenEstimator
-    │   ├── guard/                       # AIRequestProtectionService（限流/并发/熔断）
-    │   ├── token/usage/                 # TokenUsageCollector + ProviderUsageAdapter
-    │   ├── token/pricing/               # ModelPricingService
-    │   ├── token/budget/                # TokenBudgetService / BudgetReconciler / BudgetSettledEvent
-    │   ├── token/cost/                  # CostCalculator / CostLedgerService / CostAlertService /
-    │   │                                #   BudgetThresholdAlertService / AnomalyDetectionService /
-    │   │                                #   SpendForecastService / CostProtectionEngine
-    │   ├── token/analytics/             # CostAnalyticsService / CostGovernanceService / DailySummaryService
-    │   ├── token/agent/                 # AgentCostTracker（步数/工具/成本三重上限）
-    │   ├── token/infra/                 # InfrastructureCostService（分摊，不入 apiCost）
     │   ├── identity/                    # UserIdentityProvider + Demo 实现
     │   └── metrics/                     # AiMetrics
-    └── milvusdemo/                      # 【原 RAG 示例】6 个文件，一行未删
+    └── milvusdemo/                      # 【原 RAG 示例】6 个文件，一行未删（冻结区）
         ├── DemoApplication.java         # 启动类
         ├── embed/LocalHashingEmbeddingModel.java
         ├── service/{MilvusLearningService,DocumentIngestionService}.java
         └── web/{MilvusController,RagController}.java
 ```
+
+### 4.1 代码质量门禁
+
+```bash
+./scripts/verify.sh            # 完整门禁：脚本 + 后端 + 前端，退出码 0 才算通过
+./scripts/verify.sh --fast     # 本地快速反馈（跳过测试与构建）
+```
+
+| 域 | 检查内容 |
+|---|---|
+| 脚本 | 语法 / shebang / 严格模式 / 安全红线 / bash 3.2 兼容 / 可执行位（33 项） |
+| 后端 | 7 条静态规则 + 编译 + 97 项测试（73 单元 + 24 集成） |
+| 前端 | Prettier / ESLint / Stylelint / tsc / Vitest（36 项）/ build |
+
+工程规范入口：[`docs/engineering/CODE_STANDARDS.md`](docs/engineering/CODE_STANDARDS.md)  
+智能体开工前必读：[`docs/engineering/AI_AGENT_DEVELOPMENT_RULES.md`](docs/engineering/AI_AGENT_DEVELOPMENT_RULES.md)
 
 ---
 

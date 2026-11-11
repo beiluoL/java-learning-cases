@@ -1,8 +1,14 @@
 # 测试报告（V2.0 成本控制与治理平台）
 
-> 本文件对应代码路径：
+> ⚠️ **口径说明**：本报告是 **V2.0 验收时点（2026-11）的快照**，其中的 72 项测试、
+> 包路径均为当时状态。2026-10 的工程规范治理（包重组 + 补测试）之后，
+> **当前基线为 97 项测试（73 单元 + 24 集成）**，包路径也已按业务域重组。
+> 现状请以 `./scripts/verify.sh` 的实际输出与
+> [`docs/engineering/QUALITY_GATE.md`](../engineering/QUALITY_GATE.md) §9 为准。
+
+> 本文件对应代码路径（**快照时点**，包路径见上方说明）：
 > - 单测：`src/test/java/com/example/ai/**`（9 个类）、`src/test/java/com/example/milvusdemo/embed/LocalHashingEmbeddingModelTest.java`
-> - 集成测试：`src/test/java/com/example/ai/token/budget/RedisBudgetIT.java`、`token/usage/MysqlPersistenceIT.java`、`token/usage/GovernancePersistenceIT.java`、`guard/GovernanceRedisIT.java`
+> - 集成测试：`src/test/java/com/example/ai/budget/RedisBudgetIT.java`、`src/test/java/com/example/ai/integration/MysqlPersistenceIT.java`、`src/test/java/com/example/ai/integration/GovernancePersistenceIT.java`、`src/test/java/com/example/ai/protection/GovernanceRedisIT.java`
 > - 构建配置：`pom.xml`（`integration` profile → maven-failsafe，包含 `**/*IT.java`）
 > - 迁移脚本：`V1__init_ai_cost.sql`、`V2__seed_demo_data.sql`、`V3__add_provider_alias_demo_pricing.sql`、`V4__governance_schema.sql`、`V5__governance_seed.sql`
 > - 前端：`frontend/package.json`、`frontend/src/`（10 个视图）

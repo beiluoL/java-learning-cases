@@ -33,6 +33,8 @@ withDefaults(defineProps<{ height?: string; text?: string }>(), {
   color: var(--color-text-muted);
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

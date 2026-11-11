@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.ai.token.agent.mapper.AgentCostTraceMapper">
+<mapper namespace="com.example.ai.agent.mapper.AgentCostTraceMapper">
 
-    <insert id="insert" parameterType="com.example.ai.token.agent.entity.AgentCostTrace"
+    <insert id="insert" parameterType="com.example.ai.agent.entity.AgentCostTrace"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO ai_agent_cost_trace
         (task_id, agent_id, request_id, user_id, conversation_id, steps, tool_calls,
@@ -15,7 +15,7 @@
         ON DUPLICATE KEY UPDATE task_id = task_id
     </insert>
 
-    <update id="update" parameterType="com.example.ai.token.agent.entity.AgentCostTrace">
+    <update id="update" parameterType="com.example.ai.agent.entity.AgentCostTrace">
         UPDATE ai_agent_cost_trace
         SET request_id   = #{requestId},
             steps        = #{steps},
@@ -30,12 +30,46 @@
         WHERE task_id = #{taskId}
     </update>
 
-    <select id="findByTaskId" resultType="com.example.ai.token.agent.entity.AgentCostTrace">
-        SELECT * FROM ai_agent_cost_trace WHERE task_id = #{taskId}
+    <select id="findByTaskId" resultType="com.example.ai.agent.entity.AgentCostTrace">
+        SELECT id,
+               task_id,
+               agent_id,
+               request_id,
+               user_id,
+               conversation_id,
+               steps,
+               tool_calls,
+               input_tokens,
+               output_tokens,
+               total_tokens,
+               total_cost,
+               max_steps,
+               status,
+               stop_reason,
+               started_at,
+               finished_at
+        FROM ai_agent_cost_trace WHERE task_id = #{taskId}
     </select>
 
-    <select id="page" resultType="com.example.ai.token.agent.entity.AgentCostTrace">
-        SELECT * FROM ai_agent_cost_trace
+    <select id="page" resultType="com.example.ai.agent.entity.AgentCostTrace">
+        SELECT id,
+               task_id,
+               agent_id,
+               request_id,
+               user_id,
+               conversation_id,
+               steps,
+               tool_calls,
+               input_tokens,
+               output_tokens,
+               total_tokens,
+               total_cost,
+               max_steps,
+               status,
+               stop_reason,
+               started_at,
+               finished_at
+        FROM ai_agent_cost_trace
         <where>
             started_at &gt;= #{from} AND started_at &lt; #{to}
             <if test="userId != null and userId != ''"> AND user_id = #{userId} </if>

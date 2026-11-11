@@ -1,9 +1,20 @@
-#!/bin/bash
-# 管理接口回归：逐个调用全部只读管理端点 + 可安全执行的操作端点，断言 code=0
-# 用法：bash samples/verify-admin-endpoints.sh
-# 前置：后端已在 8091 运行、MySQL 容器 healthy、Redis 可用
-# 本脚本只读（3 个 POST 中：evaluate / anomaly-scan 只做评估，daily-summary/rebuild 幂等重算汇总）
-set -u
+#!/usr/bin/env bash
+#
+# 管理接口回归脚本
+#
+# 用途     ：逐个调用全部只读管理端点 + 可安全执行的操作端点，断言响应 code=0
+# 用法     ：bash samples/verify-admin-endpoints.sh
+# 参数     ：无
+# 环境变量 ：BASE（默认 http://127.0.0.1:8091），可指向其他端口实例
+# 执行前提 ：后端已启动；MySQL 容器 healthy（多数端点会查库）；Redis 可用
+# 副作用   ：基本只读。3 个 POST 中 evaluate / anomaly-scan 只做评估会写告警记录，
+#            daily-summary/rebuild 为幂等重算，可重复执行
+# 失败处理 ：任一端点失败会打印路径与原始响应片段，并计入失败数；
+#            脚本最后以「失败数」决定退出码（0=全通过，1=有失败），可直接用于门禁
+#
+# 注意     ：不使用 set -e —— 需要跑完全部端点再统一汇总，单点失败不应中断。
+#
+set -uo pipefail
 
 BASE=${BASE:-http://127.0.0.1:8091}
 OK=0

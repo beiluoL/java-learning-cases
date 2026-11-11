@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.ai.token.budget.mapper.BudgetReservationMapper">
+<mapper namespace="com.example.ai.budget.mapper.BudgetReservationMapper">
 
-    <insert id="insert" parameterType="com.example.ai.token.budget.entity.BudgetReservation" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="com.example.ai.budget.entity.BudgetReservation" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO ai_budget_reservation
         (request_id, budget_type, target_id, user_id, reserved_amount, settled_amount, status, expire_at)
         VALUES
@@ -16,12 +16,34 @@
         WHERE request_id = #{requestId} AND status = 'RESERVED'
     </update>
 
-    <select id="findByRequestId" resultType="com.example.ai.token.budget.entity.BudgetReservation">
-        SELECT * FROM ai_budget_reservation WHERE request_id = #{requestId}
+    <select id="findByRequestId" resultType="com.example.ai.budget.entity.BudgetReservation">
+        SELECT id,
+               request_id,
+               budget_type,
+               target_id,
+               user_id,
+               reserved_amount,
+               settled_amount,
+               status,
+               expire_at,
+               created_at,
+               updated_at
+        FROM ai_budget_reservation WHERE request_id = #{requestId}
     </select>
 
-    <select id="findExpired" resultType="com.example.ai.token.budget.entity.BudgetReservation">
-        SELECT * FROM ai_budget_reservation
+    <select id="findExpired" resultType="com.example.ai.budget.entity.BudgetReservation">
+        SELECT id,
+               request_id,
+               budget_type,
+               target_id,
+               user_id,
+               reserved_amount,
+               settled_amount,
+               status,
+               expire_at,
+               created_at,
+               updated_at
+        FROM ai_budget_reservation
         WHERE status = 'RESERVED' AND expire_at &lt; #{now}
         ORDER BY expire_at ASC
         LIMIT #{limit}

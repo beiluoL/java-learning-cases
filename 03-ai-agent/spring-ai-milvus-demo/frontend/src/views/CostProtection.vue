@@ -3,9 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { governanceApi } from '@/api/governance'
 import type { ProtectionRule } from '@/api/types'
 import { toErrorMessage, useResource } from '@/composables/useAsyncData'
-import {
-  PROTECTION_ACTION_OPTIONS, PROTECTION_LEVELS, protectionLevelTone,
-} from '@/constants'
+import { PROTECTION_ACTION_OPTIONS, PROTECTION_LEVELS, protectionLevelTone } from '@/constants'
 import { formatDateTime, formatRatio } from '@/utils/format'
 import type { TableColumn } from '@/utils/table'
 import PageHeader from '@/components/PageHeader.vue'
@@ -29,7 +27,13 @@ const currentLevelCode = computed(() => status.data?.levelCode ?? 1)
 const ruleColumns: TableColumn[] = [
   { key: 'ruleCode', title: '规则编码', width: '170px' },
   { key: 'ruleName', title: '规则名称' },
-  { key: 'thresholdValue', title: '阈值', align: 'right', width: '100px', render: (v) => formatRatio(v) },
+  {
+    key: 'thresholdValue',
+    title: '阈值',
+    align: 'right',
+    width: '100px',
+    render: (v) => formatRatio(v),
+  },
   { key: 'protectionLevel', title: '保护等级', width: '170px' },
   { key: 'action', title: '动作', width: '170px' },
   { key: 'priority', title: '优先级', align: 'right', width: '90px' },
@@ -150,9 +154,12 @@ async function submitEmergency() {
       <template #actions>
         <button class="btn" :disabled="status.loading" @click="reloadAll">刷新</button>
         <button
-          v-if="!status.data?.emergencyStopped" class="btn btn--danger"
+          v-if="!status.data?.emergencyStopped"
+          class="btn btn--danger"
           @click="openEmergency('stop')"
-        >紧急停用</button>
+        >
+          紧急停用
+        </button>
         <button v-else class="btn btn--primary" @click="openEmergency('resume')">恢复运行</button>
       </template>
     </PageHeader>
@@ -193,16 +200,22 @@ async function submitEmergency() {
       <header class="panel__header">
         <div>
           <h3 class="panel__title">五级保护语义</h3>
-          <p class="panel__subtitle">等级由「紧急开关 &gt; 预算阈值规则 &gt; 未恢复 CRITICAL 告警」三者取最高值</p>
+          <p class="panel__subtitle">
+            等级由「紧急开关 &gt; 预算阈值规则 &gt; 未恢复 CRITICAL 告警」三者取最高值
+          </p>
         </div>
       </header>
       <div class="panel__body level-grid">
         <div
-          v-for="lv in PROTECTION_LEVELS" :key="lv.code" class="level-card"
+          v-for="lv in PROTECTION_LEVELS"
+          :key="lv.code"
+          class="level-card"
           :class="{ 'is-current': lv.code === currentLevelCode }"
         >
           <div class="level-card__head">
-            <span class="badge" :class="'badge--' + protectionLevelTone(lv.code)">L{{ lv.code }}</span>
+            <span class="badge" :class="'badge--' + protectionLevelTone(lv.code)"
+              >L{{ lv.code }}</span
+            >
             <strong>{{ lv.name }}</strong>
             <span v-if="lv.code === currentLevelCode" class="badge badge--primary">当前</span>
           </div>
@@ -217,12 +230,18 @@ async function submitEmergency() {
       <header class="panel__header">
         <div>
           <h3 class="panel__title">模型路由档位</h3>
-          <p class="panel__subtitle">/cost-protection/status · routes · 降级方向只允许「贵 → 便宜」，不会反向升级</p>
+          <p class="panel__subtitle">
+            /cost-protection/status · routes · 降级方向只允许「贵 → 便宜」，不会反向升级
+          </p>
         </div>
       </header>
       <DataTable
-        :columns="routeColumns" :rows="status.data?.routes ?? []" row-key="level"
-        :loading="status.loading" :error="status.error" :error-trace-id="status.errorTraceId"
+        :columns="routeColumns"
+        :rows="status.data?.routes ?? []"
+        row-key="level"
+        :loading="status.loading"
+        :error="status.error"
+        :error-trace-id="status.errorTraceId"
         :empty="!status.loading && !status.error && (status.data?.routes?.length ?? 0) === 0"
         @retry="status.execute"
       >
@@ -243,8 +262,12 @@ async function submitEmergency() {
         </div>
       </header>
       <DataTable
-        :columns="ruleColumns" :rows="rules.data ?? []" row-key="ruleCode"
-        :loading="rules.loading" :error="rules.error" :error-trace-id="rules.errorTraceId"
+        :columns="ruleColumns"
+        :rows="rules.data ?? []"
+        row-key="ruleCode"
+        :loading="rules.loading"
+        :error="rules.error"
+        :error-trace-id="rules.errorTraceId"
         :empty="!rules.loading && !rules.error && (rules.data?.length ?? 0) === 0"
         @retry="rules.execute"
       >
@@ -276,14 +299,21 @@ async function submitEmergency() {
         </div>
       </header>
       <DataTable
-        :columns="logColumns" :rows="logs.data ?? []" row-key="id"
-        :loading="logs.loading" :error="logs.error" :error-trace-id="logs.errorTraceId"
+        :columns="logColumns"
+        :rows="logs.data ?? []"
+        row-key="id"
+        :loading="logs.loading"
+        :error="logs.error"
+        :error-trace-id="logs.errorTraceId"
         :empty="!logs.loading && !logs.error && (logs.data?.length ?? 0) === 0"
         empty-text="尚无保护动作记录"
         @retry="logs.execute"
       >
         <template #cell-action="{ value }">
-          <span class="badge" :class="String(value) === 'EMERGENCY_STOP' ? 'badge--danger' : 'badge--success'">
+          <span
+            class="badge"
+            :class="String(value) === 'EMERGENCY_STOP' ? 'badge--danger' : 'badge--success'"
+          >
             {{ value }}
           </span>
         </template>
@@ -297,18 +327,29 @@ async function submitEmergency() {
           <span class="field__label">保护等级（1~5）</span>
           <input v-model.number="ruleForm.level" class="input" type="number" min="1" max="5" />
           <span class="field__hint">
-            {{ PROTECTION_LEVELS.find((l) => l.code === ruleForm.level)?.label ?? '超出 1~5 范围会被后端拒绝' }}
+            {{
+              PROTECTION_LEVELS.find((l) => l.code === ruleForm.level)?.label ??
+              '超出 1~5 范围会被后端拒绝'
+            }}
           </span>
         </label>
         <label class="field">
           <span class="field__label">阈值（0~1 小数）</span>
-          <input v-model.number="ruleForm.threshold" class="input" type="number" step="0.01" min="0" />
+          <input
+            v-model.number="ruleForm.threshold"
+            class="input"
+            type="number"
+            step="0.01"
+            min="0"
+          />
           <span class="field__hint">当前值 {{ formatRatio(ruleForm.threshold) }}</span>
         </label>
         <label class="field">
           <span class="field__label">动作</span>
           <select v-model="ruleForm.action" class="select">
-            <option v-for="o in PROTECTION_ACTION_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            <option v-for="o in PROTECTION_ACTION_OPTIONS" :key="o.value" :value="o.value">
+              {{ o.label }}
+            </option>
           </select>
         </label>
         <label class="field">
@@ -324,7 +365,12 @@ async function submitEmergency() {
         </label>
         <label class="field form-grid__full">
           <span class="field__label">备注</span>
-          <input v-model="ruleForm.remark" class="input" type="text" placeholder="说明这条规则的用途" />
+          <input
+            v-model="ruleForm.remark"
+            class="input"
+            type="text"
+            placeholder="说明这条规则的用途"
+          />
         </label>
       </div>
       <p v-if="ruleError" class="form-error">{{ ruleError }}</p>
@@ -346,13 +392,22 @@ async function submitEmergency() {
       <div class="form-grid">
         <label class="field form-grid__full">
           <span class="field__label">原因（必填）</span>
-          <textarea v-model="emergencyReason" class="textarea" rows="3"
-            :placeholder="emergencyMode === 'stop' ? '例如：发现异常刷量，先全局止血' : '例如：异常已排除，恢复运行'" />
+          <textarea
+            v-model="emergencyReason"
+            class="textarea"
+            rows="3"
+            :placeholder="
+              emergencyMode === 'stop'
+                ? '例如：发现异常刷量，先全局止血'
+                : '例如：异常已排除，恢复运行'
+            "
+          />
         </label>
       </div>
       <p class="text-muted form-hint">
         <template v-if="emergencyMode === 'stop'">
-          停用后所有新的付费调用会返回 40302；恢复时会把本次停用写下的 PROTECTION_ACTION 告警一并标记为已恢复。
+          停用后所有新的付费调用会返回 40302；恢复时会把本次停用写下的 PROTECTION_ACTION
+          告警一并标记为已恢复。
         </template>
         <template v-else>
           恢复后保护等级会重新按预算使用率与未恢复告警计算，通常回到 NORMAL。
@@ -362,10 +417,12 @@ async function submitEmergency() {
       <template #footer>
         <button class="btn" @click="emergencyModalOpen = false">取消</button>
         <button
-          class="btn" :class="emergencyMode === 'stop' ? 'btn--danger' : 'btn--primary'"
-          :disabled="emergencyLoading" @click="submitEmergency"
+          class="btn"
+          :class="emergencyMode === 'stop' ? 'btn--danger' : 'btn--primary'"
+          :disabled="emergencyLoading"
+          @click="submitEmergency"
         >
-          {{ emergencyLoading ? '提交中…' : (emergencyMode === 'stop' ? '确认停用' : '确认恢复') }}
+          {{ emergencyLoading ? '提交中…' : emergencyMode === 'stop' ? '确认停用' : '确认恢复' }}
         </button>
       </template>
     </Modal>
@@ -393,20 +450,48 @@ async function submitEmergency() {
   border-color: var(--color-primary-border);
   background: var(--color-primary-soft);
 }
-.level-card__head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--font-sm); }
-.level-card__label { margin-top: 6px; font-size: var(--font-sm); color: var(--color-text-secondary); }
-.level-card__desc { margin-top: 2px; font-size: var(--font-xs); color: var(--color-text-muted); }
+.level-card__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: var(--font-sm);
+}
+.level-card__label {
+  margin-top: 6px;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+.level-card__desc {
+  margin-top: 2px;
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
 }
-.form-grid__full { grid-column: 1 / -1; }
-.form-error { margin-top: var(--space-3); font-size: var(--font-sm); color: var(--color-danger); }
-.form-hint { margin-top: var(--space-3); font-size: var(--font-xs); line-height: 1.7; }
-.foot-note { font-size: var(--font-xs); }
+.form-grid__full {
+  grid-column: 1 / -1;
+}
+.form-error {
+  margin-top: var(--space-3);
+  font-size: var(--font-sm);
+  color: var(--color-danger);
+}
+.form-hint {
+  margin-top: var(--space-3);
+  font-size: var(--font-xs);
+  line-height: 1.7;
+}
+.foot-note {
+  font-size: var(--font-xs);
+}
 @media (max-width: 560px) {
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

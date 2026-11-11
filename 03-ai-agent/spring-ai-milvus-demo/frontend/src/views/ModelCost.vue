@@ -17,7 +17,11 @@ import ProgressBar from '@/components/ProgressBar.vue'
 const store = useTimeRangeStore()
 const models = useResource(() => costApi.models(store.range))
 
-watch(() => store.revision, () => models.execute(), { immediate: true })
+watch(
+  () => store.revision,
+  () => models.execute(),
+  { immediate: true },
+)
 
 const columns: TableColumn[] = [
   { key: 'provider', title: 'Provider', width: '140px' },
@@ -56,9 +60,14 @@ const compareOption = computed<EChartsOption>(() =>
         </div>
       </header>
       <DataTable
-        :columns="columns" :rows="models.data ?? []" row-key="modelName"
-        :loading="models.loading" :error="models.error" :error-trace-id="models.errorTraceId"
-        :empty="isEmptyOf(models)" @retry="models.execute"
+        :columns="columns"
+        :rows="models.data ?? []"
+        row-key="modelName"
+        :loading="models.loading"
+        :error="models.error"
+        :error-trace-id="models.errorTraceId"
+        :empty="isEmptyOf(models)"
+        @retry="models.execute"
       >
         <template #cell-costRatio="{ value }">
           <div class="ratio-cell">
@@ -72,8 +81,12 @@ const compareOption = computed<EChartsOption>(() =>
     <ChartCard
       title="模型成本横向对比"
       subtitle="/cost/models · 按 totalCost 排序"
-      :loading="models.loading" :error="models.error" :error-trace-id="models.errorTraceId"
-      :empty="isEmptyOf(models)" height="360px" @retry="models.execute"
+      :loading="models.loading"
+      :error="models.error"
+      :error-trace-id="models.errorTraceId"
+      :empty="isEmptyOf(models)"
+      height="360px"
+      @retry="models.execute"
     >
       <EChart :option="compareOption" height="360px" />
     </ChartCard>
@@ -81,6 +94,15 @@ const compareOption = computed<EChartsOption>(() =>
 </template>
 
 <style scoped>
-.ratio-cell { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 150px; }
-.ratio-cell > :last-child { flex: 1; max-width: 90px; }
+.ratio-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 150px;
+}
+.ratio-cell > :last-child {
+  flex: 1;
+  max-width: 90px;
+}
 </style>

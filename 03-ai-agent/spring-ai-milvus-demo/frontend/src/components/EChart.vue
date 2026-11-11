@@ -3,10 +3,13 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
 
-const props = withDefaults(defineProps<{
-  option: EChartsOption
-  height?: string
-}>(), { height: '300px' })
+const props = withDefaults(
+  defineProps<{
+    option: EChartsOption
+    height?: string
+  }>(),
+  { height: '300px' },
+)
 
 const el = ref<HTMLDivElement | null>(null)
 let chart: ECharts | null = null
@@ -27,7 +30,11 @@ onMounted(async () => {
   observer.observe(el.value)
 })
 
-watch(() => props.option, () => render(), { deep: true })
+watch(
+  () => props.option,
+  () => render(),
+  { deep: true },
+)
 
 onBeforeUnmount(() => {
   observer?.disconnect()
@@ -42,5 +49,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.echart { width: 100%; }
+.echart {
+  width: 100%;
+}
 </style>

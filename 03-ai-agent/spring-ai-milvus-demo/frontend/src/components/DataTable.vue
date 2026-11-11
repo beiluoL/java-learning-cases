@@ -2,29 +2,32 @@
 import AsyncState from './AsyncState.vue'
 import type { TableColumn } from '@/utils/table'
 
-const props = withDefaults(defineProps<{
-  columns: TableColumn[]
-  rows: unknown[]
-  rowKey?: string
-  loading?: boolean
-  error?: string | null
-  errorTraceId?: string
-  empty?: boolean
-  emptyText?: string
-  activeSort?: string
-  clickable?: boolean
-  minHeight?: string
-}>(), {
-  rowKey: '',
-  loading: false,
-  error: null,
-  errorTraceId: '',
-  empty: false,
-  emptyText: '没有符合条件的记录',
-  activeSort: '',
-  clickable: false,
-  minHeight: '160px',
-})
+const props = withDefaults(
+  defineProps<{
+    columns: TableColumn[]
+    rows: unknown[]
+    rowKey?: string
+    loading?: boolean
+    error?: string | null
+    errorTraceId?: string
+    empty?: boolean
+    emptyText?: string
+    activeSort?: string
+    clickable?: boolean
+    minHeight?: string
+  }>(),
+  {
+    rowKey: '',
+    loading: false,
+    error: null,
+    errorTraceId: '',
+    empty: false,
+    emptyText: '没有符合条件的记录',
+    activeSort: '',
+    clickable: false,
+    minHeight: '160px',
+  },
+)
 
 const emit = defineEmits<{
   retry: []
@@ -104,7 +107,10 @@ function isSorted(col: TableColumn): boolean {
 </template>
 
 <style scoped>
-.table-scroll { width: 100%; overflow-x: auto; }
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -127,13 +133,34 @@ function isSorted(col: TableColumn): boolean {
   position: sticky;
   top: 0;
 }
-.table th.is-sortable { cursor: pointer; user-select: none; }
-.table th.is-sortable:hover { color: var(--color-primary); }
-.table th.is-sorted { color: var(--color-primary); }
-.table__sort { margin-left: 5px; opacity: 0.45; font-size: var(--font-xs); }
-.table th.is-sorted .table__sort { opacity: 1; }
-.table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover { background: var(--color-surface-muted); }
-.table tbody tr.is-clickable { cursor: pointer; }
-.table__footer { border-top: 1px solid var(--color-border); }
+.table th.is-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.table th.is-sortable:hover {
+  color: var(--color-primary);
+}
+.table th.is-sorted {
+  color: var(--color-primary);
+}
+.table__sort {
+  margin-left: 5px;
+  opacity: 0.45;
+  font-size: var(--font-xs);
+}
+.table th.is-sorted .table__sort {
+  opacity: 1;
+}
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+.table tbody tr:hover {
+  background: var(--color-surface-muted);
+}
+.table tbody tr.is-clickable {
+  cursor: pointer;
+}
+.table__footer {
+  border-top: 1px solid var(--color-border);
+}
 </style>

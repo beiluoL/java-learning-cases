@@ -4,7 +4,12 @@ import { usageApi } from '@/api/usage'
 import type { UsageQuery, UsageRecord } from '@/api/types'
 import { useResource } from '@/composables/useAsyncData'
 import { useTimeRangeStore } from '@/stores/timeRange'
-import { PAGE_SIZE_OPTIONS, USAGE_STATUS_OPTIONS, requestStatusTone, usageStatusTone } from '@/constants'
+import {
+  PAGE_SIZE_OPTIONS,
+  USAGE_STATUS_OPTIONS,
+  requestStatusTone,
+  usageStatusTone,
+} from '@/constants'
 import { formatCount, formatDateTime, formatMoney, formatToken } from '@/utils/format'
 import type { TableColumn } from '@/utils/table'
 import PageHeader from '@/components/PageHeader.vue'
@@ -14,7 +19,10 @@ import DataTable from '@/components/DataTable.vue'
 import Modal from '@/components/Modal.vue'
 import AsyncState from '@/components/AsyncState.vue'
 
-interface KvItem { label: string; value: string }
+interface KvItem {
+  label: string
+  value: string
+}
 
 const store = useTimeRangeStore()
 
@@ -52,10 +60,14 @@ function buildQuery(): UsageQuery {
 const list = useResource(() => usageApi.page(buildQuery()))
 
 // 时间筛选变化（或首次进入）时，重置到第 1 页并以新的 startTime/endTime 重新取数
-watch(() => store.revision, () => {
-  page.value = 1
-  list.execute()
-}, { immediate: true })
+watch(
+  () => store.revision,
+  () => {
+    page.value = 1
+    list.execute()
+  },
+  { immediate: true },
+)
 
 const records = computed(() => list.data?.records ?? [])
 const total = computed(() => list.data?.total ?? 0)
@@ -63,16 +75,52 @@ const totalPages = computed(() => Math.max(1, Math.ceil(total.value / size.value
 const listEmpty = computed(() => !list.loading && !list.error && records.value.length === 0)
 
 const columns: TableColumn[] = [
-  { key: 'createdAt', title: '时间', width: '168px', sortable: true, render: (v) => formatDateTime(v) },
+  {
+    key: 'createdAt',
+    title: '时间',
+    width: '168px',
+    sortable: true,
+    render: (v) => formatDateTime(v),
+  },
   { key: 'userId', title: '用户', width: '130px' },
   { key: 'modelName', title: '模型', width: '170px' },
   { key: 'businessScene', title: '场景', width: '120px' },
   { key: 'provider', title: 'Provider', width: '110px' },
-  { key: 'inputTokens', title: '输入', align: 'right', sortable: true, render: (v) => formatToken(v) },
-  { key: 'outputTokens', title: '输出', align: 'right', sortable: true, render: (v) => formatToken(v) },
-  { key: 'totalTokens', title: '总 Token', align: 'right', sortable: true, render: (v) => formatToken(v) },
-  { key: 'totalCost', title: '成本 (USD)', align: 'right', sortable: true, render: (v) => formatMoney(v) },
-  { key: 'latencyMs', title: '耗时', align: 'right', sortable: true, render: (v) => `${formatCount(v)} ms` },
+  {
+    key: 'inputTokens',
+    title: '输入',
+    align: 'right',
+    sortable: true,
+    render: (v) => formatToken(v),
+  },
+  {
+    key: 'outputTokens',
+    title: '输出',
+    align: 'right',
+    sortable: true,
+    render: (v) => formatToken(v),
+  },
+  {
+    key: 'totalTokens',
+    title: '总 Token',
+    align: 'right',
+    sortable: true,
+    render: (v) => formatToken(v),
+  },
+  {
+    key: 'totalCost',
+    title: '成本 (USD)',
+    align: 'right',
+    sortable: true,
+    render: (v) => formatMoney(v),
+  },
+  {
+    key: 'latencyMs',
+    title: '耗时',
+    align: 'right',
+    sortable: true,
+    render: (v) => `${formatCount(v)} ms`,
+  },
   { key: 'requestStatus', title: '状态', width: '110px' },
   { key: 'usageStatus', title: 'Usage', width: '120px' },
   { key: 'pricingVersion', title: '价格版本', width: '120px' },
@@ -86,8 +134,13 @@ function onSearch() {
 
 function onReset() {
   Object.assign(filters, {
-    userId: '', modelName: '', businessScene: '', requestStatus: '',
-    usageStatus: '', minCost: '', maxCost: '',
+    userId: '',
+    modelName: '',
+    businessScene: '',
+    requestStatus: '',
+    usageStatus: '',
+    minCost: '',
+    maxCost: '',
   })
   sort.value = 'createdAt,DESC'
   page.value = 1
@@ -218,7 +271,9 @@ const budgetItems = computed<KvItem[]>(() => {
         <span class="field__label">Usage 类型</span>
         <select v-model="filters.usageStatus" class="select">
           <option value="">全部</option>
-          <option v-for="o in USAGE_STATUS_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in USAGE_STATUS_OPTIONS" :key="o.value" :value="o.value">
+            {{ o.label }}
+          </option>
         </select>
       </label>
       <label class="field">
@@ -243,30 +298,63 @@ const budgetItems = computed<KvItem[]>(() => {
         </div>
       </header>
       <DataTable
-        :columns="columns" :rows="records" row-key="requestId"
-        :loading="list.loading" :error="list.error" :error-trace-id="list.errorTraceId"
-        :empty="listEmpty" :active-sort="sort" clickable
-        @retry="list.execute" @row-click="openDetail" @sort="onSort"
+        :columns="columns"
+        :rows="records"
+        row-key="requestId"
+        :loading="list.loading"
+        :error="list.error"
+        :error-trace-id="list.errorTraceId"
+        :empty="listEmpty"
+        :active-sort="sort"
+        clickable
+        @retry="list.execute"
+        @row-click="openDetail"
+        @sort="onSort"
       >
         <template #cell-requestStatus="{ value }">
-          <span class="badge" :class="'badge--' + requestStatusTone(String(value ?? ''))">{{ value ?? '—' }}</span>
+          <span class="badge" :class="'badge--' + requestStatusTone(String(value ?? ''))">{{
+            value ?? '—'
+          }}</span>
         </template>
         <template #cell-usageStatus="{ value }">
-          <span class="badge" :class="'badge--' + usageStatusTone(String(value ?? ''))">{{ value ?? '—' }}</span>
+          <span class="badge" :class="'badge--' + usageStatusTone(String(value ?? ''))">{{
+            value ?? '—'
+          }}</span>
         </template>
 
         <template #footer>
           <div class="pagination">
             <div class="row">
-              <span class="pagination__info">共 {{ formatCount(total) }} 条 · 第 {{ page }} / {{ totalPages }} 页</span>
-              <select v-model.number="size" class="select page-size" aria-label="每页条数" @change="onSizeChange">
+              <span class="pagination__info"
+                >共 {{ formatCount(total) }} 条 · 第 {{ page }} / {{ totalPages }} 页</span
+              >
+              <select
+                v-model.number="size"
+                class="select page-size"
+                aria-label="每页条数"
+                @change="onSizeChange"
+              >
                 <option v-for="s in PAGE_SIZE_OPTIONS" :key="s" :value="s">{{ s }} 条/页</option>
               </select>
             </div>
             <div class="pagination__controls">
-              <button class="btn btn--sm" type="button" :disabled="page <= 1" @click="goPage(page - 1)">上一页</button>
+              <button
+                class="btn btn--sm"
+                type="button"
+                :disabled="page <= 1"
+                @click="goPage(page - 1)"
+              >
+                上一页
+              </button>
               <span class="pagination__page mono">{{ page }}</span>
-              <button class="btn btn--sm" type="button" :disabled="page >= totalPages" @click="goPage(page + 1)">下一页</button>
+              <button
+                class="btn btn--sm"
+                type="button"
+                :disabled="page >= totalPages"
+                @click="goPage(page + 1)"
+              >
+                下一页
+              </button>
             </div>
           </div>
         </template>
@@ -275,20 +363,27 @@ const budgetItems = computed<KvItem[]>(() => {
 
     <!-- 详情抽屉 -->
     <Modal
-      v-model="drawerOpen" title="调用明细" :subtitle="selectedId"
-      position="right" width="600px"
+      v-model="drawerOpen"
+      title="调用明细"
+      :subtitle="selectedId"
+      position="right"
+      width="600px"
     >
       <AsyncState
-        :loading="detail.loading" :error="detail.error" :error-trace-id="detail.errorTraceId"
+        :loading="detail.loading"
+        :error="detail.error"
+        :error-trace-id="detail.errorTraceId"
         :empty="!detail.loading && !detail.error && !detail.data"
-        min-height="220px" @retry="detail.execute"
+        min-height="220px"
+        @retry="detail.execute"
       >
         <div class="stack detail">
           <section class="detail-section">
             <h4 class="detail-section__title">基础信息</h4>
             <dl class="kv">
               <div v-for="item in baseItems" :key="item.label" class="kv__item">
-                <dt>{{ item.label }}</dt><dd class="mono">{{ item.value }}</dd>
+                <dt>{{ item.label }}</dt>
+                <dd class="mono">{{ item.value }}</dd>
               </div>
             </dl>
           </section>
@@ -297,7 +392,8 @@ const budgetItems = computed<KvItem[]>(() => {
             <h4 class="detail-section__title">Usage · Token 用量</h4>
             <dl class="kv">
               <div v-for="item in usageItems" :key="item.label" class="kv__item">
-                <dt>{{ item.label }}</dt><dd class="mono">{{ item.value }}</dd>
+                <dt>{{ item.label }}</dt>
+                <dd class="mono">{{ item.value }}</dd>
               </div>
             </dl>
           </section>
@@ -312,7 +408,8 @@ const budgetItems = computed<KvItem[]>(() => {
             </p>
             <dl class="kv">
               <div v-for="item in breakdownItems" :key="item.label" class="kv__item">
-                <dt>{{ item.label }}</dt><dd class="mono">{{ item.value }}</dd>
+                <dt>{{ item.label }}</dt>
+                <dd class="mono">{{ item.value }}</dd>
               </div>
             </dl>
           </section>
@@ -322,7 +419,8 @@ const budgetItems = computed<KvItem[]>(() => {
             <h4 class="detail-section__title">预算预扣 / 结算状态</h4>
             <dl class="kv">
               <div v-for="item in budgetItems" :key="item.label" class="kv__item">
-                <dt>{{ item.label }}</dt><dd class="mono">{{ item.value }}</dd>
+                <dt>{{ item.label }}</dt>
+                <dd class="mono">{{ item.value }}</dd>
               </div>
             </dl>
           </section>
@@ -336,8 +434,12 @@ const budgetItems = computed<KvItem[]>(() => {
 </template>
 
 <style scoped>
-.page-size { width: 110px; }
-.detail { gap: var(--space-6); }
+.page-size {
+  width: 110px;
+}
+.detail {
+  gap: var(--space-6);
+}
 .detail-section__title {
   margin-bottom: 12px;
   padding-bottom: 8px;
@@ -345,10 +447,23 @@ const budgetItems = computed<KvItem[]>(() => {
   font-size: var(--font-md);
   font-weight: var(--font-weight-semibold);
 }
-.kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
-.kv__item { min-width: 0; }
-.kv__item dt { font-size: var(--font-xs); color: var(--color-text-muted); }
-.kv__item dd { margin: 3px 0 0; font-size: var(--font-base); word-break: break-all; }
+.kv {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+.kv__item {
+  min-width: 0;
+}
+.kv__item dt {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
+.kv__item dd {
+  margin: 3px 0 0;
+  font-size: var(--font-base);
+  word-break: break-all;
+}
 .formula {
   margin-bottom: 14px;
   padding: 10px 12px;
@@ -360,6 +475,8 @@ const budgetItems = computed<KvItem[]>(() => {
   color: var(--color-text-secondary);
 }
 @media (max-width: 520px) {
-  .kv { grid-template-columns: 1fr; }
+  .kv {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

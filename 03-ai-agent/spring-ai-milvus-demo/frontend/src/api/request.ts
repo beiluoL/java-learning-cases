@@ -61,7 +61,9 @@ instance.interceptors.response.use(
     if (!error.response) {
       return Promise.reject(new ApiError('无法连接后端服务，请确认 http://localhost:8091 已启动'))
     }
-    return Promise.reject(new ApiError(`服务异常（HTTP ${error.response.status}）`, error.response.status))
+    return Promise.reject(
+      new ApiError(`服务异常（HTTP ${error.response.status}）`, error.response.status),
+    )
   },
 )
 

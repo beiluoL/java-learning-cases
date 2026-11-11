@@ -40,7 +40,11 @@ function toIso(d: Date): string {
 }
 
 /** 解析为 ISO 8601 UTC 的 startTime / endTime（自定义值按本地时区 datetime-local 解析） */
-export function resolveRange(preset: RangePreset, customStart: string, customEnd: string): TimeRange {
+export function resolveRange(
+  preset: RangePreset,
+  customStart: string,
+  customEnd: string,
+): TimeRange {
   const now = new Date()
   switch (preset) {
     case 'today':

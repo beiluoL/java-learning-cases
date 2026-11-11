@@ -19,16 +19,29 @@ withDefaults(defineProps<{ title?: string; description?: string }>(), {
 </template>
 
 <style scoped>
-.filter-bar { padding: var(--space-4) var(--space-5); }
+.filter-bar {
+  padding: var(--space-4) var(--space-5);
+}
 .filter-bar__head {
   display: flex;
   align-items: baseline;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
-.filter-bar__title { font-size: var(--font-md); font-weight: var(--font-weight-semibold); }
-.filter-bar__desc { font-size: var(--font-sm); color: var(--color-text-muted); }
-.filter-bar__body { display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; }
+.filter-bar__title {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+}
+.filter-bar__desc {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+}
+.filter-bar__body {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
 .filter-bar__fields {
   flex: 1;
   min-width: 240px;
@@ -36,9 +49,16 @@ withDefaults(defineProps<{ title?: string; description?: string }>(), {
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: var(--space-3) var(--space-4);
 }
-.filter-bar__actions { display: flex; align-items: center; gap: var(--space-2); padding-bottom: 1px; }
+.filter-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: 1px;
+}
 
 @media (max-width: 640px) {
-  .filter-bar__fields { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .filter-bar__fields {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
 }
 </style>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.ai.token.cost.mapper.CostOptimizationLogMapper">
+<mapper namespace="com.example.ai.optimization.mapper.CostOptimizationLogMapper">
 
-    <insert id="insert" parameterType="com.example.ai.token.cost.entity.CostOptimizationLog"
+    <insert id="insert" parameterType="com.example.ai.optimization.entity.CostOptimizationLog"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO ai_cost_optimization_log
         (request_id, strategy, before_tokens, after_tokens, saved_tokens, saved_cost,
@@ -28,8 +28,19 @@
         ORDER BY savedCost DESC
     </select>
 
-    <select id="history" resultType="com.example.ai.token.cost.entity.CostOptimizationLog">
-        SELECT * FROM ai_cost_optimization_log
+    <select id="history" resultType="com.example.ai.optimization.entity.CostOptimizationLog">
+        SELECT id,
+               request_id,
+               strategy,
+               before_tokens,
+               after_tokens,
+               saved_tokens,
+               saved_cost,
+               measure_kind,
+               quality_note,
+               detail,
+               created_at
+        FROM ai_cost_optimization_log
         <where>
             <if test="strategy != null and strategy != ''"> AND strategy = #{strategy} </if>
         </where>

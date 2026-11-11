@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, watch } from 'vue'
 
-const props = withDefaults(defineProps<{
-  modelValue: boolean
-  title: string
-  subtitle?: string
-  width?: string
-  position?: 'center' | 'right'
-}>(), {
-  subtitle: '',
-  width: '560px',
-  position: 'center',
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean
+    title: string
+    subtitle?: string
+    width?: string
+    position?: 'center' | 'right'
+  }>(),
+  {
+    subtitle: '',
+    width: '560px',
+    position: 'center',
+  },
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
@@ -35,7 +38,9 @@ onBeforeUnmount(() => {
 
 watch(
   () => props.modelValue,
-  (open) => { document.body.style.overflow = open ? 'hidden' : '' },
+  (open) => {
+    document.body.style.overflow = open ? 'hidden' : ''
+  },
 )
 </script>
 
@@ -78,8 +83,15 @@ watch(
   display: flex;
   background: rgba(17, 24, 39, 0.42);
 }
-.modal-overlay--center { align-items: center; justify-content: center; padding: var(--space-4); }
-.modal-overlay--right { align-items: stretch; justify-content: flex-end; }
+.modal-overlay--center {
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.modal-overlay--right {
+  align-items: stretch;
+  justify-content: flex-end;
+}
 
 .modal {
   display: flex;
@@ -107,8 +119,16 @@ watch(
   padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--color-border);
 }
-.modal__title { font-size: var(--font-lg); font-weight: var(--font-weight-semibold); letter-spacing: -0.01em; }
-.modal__subtitle { margin-top: 4px; font-size: var(--font-sm); color: var(--color-text-muted); }
+.modal__title {
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.01em;
+}
+.modal__subtitle {
+  margin-top: 4px;
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+}
 .modal__close {
   border: none;
   background: transparent;
@@ -118,8 +138,16 @@ watch(
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
 }
-.modal__close:hover { background: var(--color-surface-hover); color: var(--color-text); }
-.modal__body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--space-5); }
+.modal__close:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+.modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
 .modal__footer {
   display: flex;
   align-items: center;
@@ -129,9 +157,24 @@ watch(
   border-top: 1px solid var(--color-border);
 }
 
-.modal-enter-active, .modal-leave-active { transition: opacity 180ms ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-active .modal, .modal-leave-active .modal { transition: transform 180ms ease; }
-.modal-enter-from .modal--center, .modal-leave-to .modal--center { transform: translateY(-8px) scale(0.985); }
-.modal-enter-from .modal--right, .modal-leave-to .modal--right { transform: translateX(100%); }
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 180ms ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-active .modal,
+.modal-leave-active .modal {
+  transition: transform 180ms ease;
+}
+.modal-enter-from .modal--center,
+.modal-leave-to .modal--center {
+  transform: translateY(-8px) scale(0.985);
+}
+.modal-enter-from .modal--right,
+.modal-leave-to .modal--right {
+  transform: translateX(100%);
+}
 </style>

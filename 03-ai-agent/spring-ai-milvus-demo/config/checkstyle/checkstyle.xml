@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  后端 Checkstyle 规则集
+
+  设计原则（与 CODE_STANDARDS.md「渐进式治理」一致）：
+    1. 只启用「当前存量已满足」的规则 —— 门禁首次接入必须能通过，
+       否则会变成「人人都在关掉的噪声」，失去存在意义。
+    2. 阈值暂时放宽到存量可过的水平，并注明收紧时机（B6 批次）。
+    3. 不启用纯格式规则（缩进、空格、行宽）—— 那是 Spotless 的职责，
+       两套工具管同一件事只会互相打架。
+
+  分级：
+    severity=error   —— 阻断门禁
+    severity=warning —— 只记录（当前未使用，保留扩展位）
+-->
+<module name="Checker">
+    <property name="severity" value="error"/>
+    <property name="charset" value="UTF-8"/>
+    <!-- 不检查注释内容里的拼写/格式 -->
+    <property name="fileExtensions" value="java"/>
+
+    <!-- ==================== 文件级 ==================== -->
+
+    <!-- 禁止制表符（统一 4 空格缩进，由 Spotless/IDE 保证） -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <module name="TreeWalker">
+
+        <!-- 禁止 TODO / FIXME 冒充未完成功能（执行纪律）。
+             注意：TodoComment 是 TreeWalker 的子节点，不能挂在 Checker 下，
+             否则报「TodoComment is not allowed as a child in Checker」。
+             这也是「检查配置本身必须有测试」的理由 —— 配置写错时门禁会静默失效。 -->
+        <module name="TodoComment">
+            <property name="format" value="(TODO|FIXME|XXX)"/>
+        </module>
+
+        <!-- ==================== 命名 ==================== -->
+
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+        </module>
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="MemberName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+        <module name="ConstantName">
+            <!-- 只约束 public/protected/package 常量。
+                 private static final 的 Logger（惯例命名 log）与预编译正则（pattern）
+                 若强制全大写下划线，会与 SLF4J/Lombok 生态及 JDK 惯例冲突，
+                 属于「规则错配」而非代码问题。业界标准配置即 applyToPrivate=false。 -->
+            <property name="applyToPrivate" value="false"/>
+        </module>
+        <module name="StaticVariableName"/>
+        <!-- 不检查 record component 名，交由 TypeName/MemberName 覆盖 -->
+
+        <!-- 禁止与 java.lang 同名造成混淆的类名 -->
+        <module name="AbbreviationAsWordInName">
+            <property name="allowedAbbreviationLength" value="2"/>
+            <property name="ignoreStatic" value="true"/>
+            <property name="ignoreFinal" value="true"/>
+            <!-- Mapper/XML/HTTP 等已成词的缩写不在检查范围内 -->
+            <property name="ignoreStaticFinal" value="true"/>
+        </module>
+
+        <!-- ==================== import ==================== -->
+
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="true"/>
+        </module>
+        <module name="RedundantImport"/>
+
+        <!-- ==================== 方法规模 ==================== -->
+        <!-- 目标 50 行；当前存量有 2 个超限（58/55），B6 拆分后收紧到 50 -->
+        <module name="MethodLength">
+            <property name="max" value="60"/>
+            <property name="countEmpty" value="false"/>
+        </module>
+        <module name="ParameterNumber">
+            <property name="max" value="7"/>
+            <property name="ignoreOverriddenMethods" value="true"/>
+        </module>
+        <module name="NestedIfDepth">
+            <property name="max" value="3"/>
+        </module>
+        <module name="NestedForDepth">
+            <property name="max" value="3"/>
+        </module>
+
+        <!-- ==================== 控制流 ==================== -->
+
+        <module name="EmptyCatchBlock">
+            <property name="exceptionVariableName" value="expected|ignored"/>
+        </module>
+        <module name="NeedBraces"/>
+        <module name="OneStatementPerLine"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="FallThrough"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="EqualsHashCode"/>
+        <module name="StringLiteralEquality"/>
+        <module name="DefaultComesLast"/>
+        <module name="EqualsAvoidNull"/>
+
+        <!-- 不允许 finally 中 return/throw（会吞异常） -->
+        <module name="IllegalTokenText">
+            <property name="tokens" value="STRING_LITERAL"/>
+            <property name="format" value="\\u00(09|0(a|A)|0(c|C)|0(d|D)|22|27|5(C|c))|\\(0(10|11|12|14|15|42|47)|134)"/>
+            <property name="message" value="禁止使用不可见字符或转义引号，改用显式常量"/>
+        </module>
+
+        <!-- ==================== 其他 ==================== -->
+
+        <!-- 禁止 finalize -->
+        <module name="NoFinalizer"/>
+        <!-- 变量声明应靠近首次使用：不做强制，规则噪音大 -->
+
+    </module>
+</module>

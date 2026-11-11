@@ -45,11 +45,16 @@ export const DEFAULT_CURRENCY = 'USD'
 
 export function usageStatusTone(status: string): BadgeTone {
   switch (status) {
-    case 'REAL': return 'success'
-    case 'ESTIMATED': return 'warning'
-    case 'LOCAL': return 'info'
-    case 'MOCK': return 'demo'
-    default: return 'neutral'
+    case 'REAL':
+      return 'success'
+    case 'ESTIMATED':
+      return 'warning'
+    case 'LOCAL':
+      return 'info'
+    case 'MOCK':
+      return 'demo'
+    default:
+      return 'neutral'
   }
 }
 
@@ -140,21 +145,31 @@ export const PROTECTION_ACTION_OPTIONS = [
 
 export function alertLevelTone(level: string): BadgeTone {
   switch ((level || '').toUpperCase()) {
-    case 'BLOCKED': return 'danger'
-    case 'CRITICAL': return 'danger'
-    case 'HIGH': return 'warning'
-    case 'WARNING': return 'warning'
-    case 'INFO': return 'info'
-    default: return 'neutral'
+    case 'BLOCKED':
+      return 'danger'
+    case 'CRITICAL':
+      return 'danger'
+    case 'HIGH':
+      return 'warning'
+    case 'WARNING':
+      return 'warning'
+    case 'INFO':
+      return 'info'
+    default:
+      return 'neutral'
   }
 }
 
 export function alertStatusTone(status: string): BadgeTone {
   switch ((status || '').toUpperCase()) {
-    case 'OPEN': return 'danger'
-    case 'ACKNOWLEDGED': return 'warning'
-    case 'RESOLVED': return 'success'
-    default: return 'neutral'
+    case 'OPEN':
+      return 'danger'
+    case 'ACKNOWLEDGED':
+      return 'warning'
+    case 'RESOLVED':
+      return 'success'
+    default:
+      return 'neutral'
   }
 }
 
@@ -169,19 +184,27 @@ export function protectionLevelTone(level: number): BadgeTone {
 /** 收益口径 → 徽标色调 */
 export function measureKindTone(kind: string): BadgeTone {
   switch ((kind || '').toUpperCase()) {
-    case 'MEASURED': return 'success'
-    case 'COUNTERFACTUAL': return 'info'
-    case 'ESTIMATED': return 'warning'
-    default: return 'neutral'
+    case 'MEASURED':
+      return 'success'
+    case 'COUNTERFACTUAL':
+      return 'info'
+    case 'ESTIMATED':
+      return 'warning'
+    default:
+      return 'neutral'
   }
 }
 
 /** 成本口径 → 徽标色调 */
 export function costKindTone(kind: string): BadgeTone {
   switch ((kind || '').toUpperCase()) {
-    case 'ACTUAL': return 'primary'
-    case 'ALLOCATED': return 'info'
-    case 'SAVED': return 'success'
-    default: return 'neutral'
+    case 'ACTUAL':
+      return 'primary'
+    case 'ALLOCATED':
+      return 'info'
+    case 'SAVED':
+      return 'success'
+    default:
+      return 'neutral'
   }
 }

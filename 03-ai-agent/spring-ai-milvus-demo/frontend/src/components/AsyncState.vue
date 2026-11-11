@@ -3,21 +3,24 @@ import LoadingState from './LoadingState.vue'
 import ErrorState from './ErrorState.vue'
 import EmptyState from './EmptyState.vue'
 
-withDefaults(defineProps<{
-  loading?: boolean
-  error?: string | null
-  errorTraceId?: string
-  empty?: boolean
-  emptyText?: string
-  minHeight?: string
-}>(), {
-  loading: false,
-  error: null,
-  errorTraceId: '',
-  empty: false,
-  emptyText: '所选时间范围内暂无数据',
-  minHeight: '160px',
-})
+withDefaults(
+  defineProps<{
+    loading?: boolean
+    error?: string | null
+    errorTraceId?: string
+    empty?: boolean
+    emptyText?: string
+    minHeight?: string
+  }>(),
+  {
+    loading: false,
+    error: null,
+    errorTraceId: '',
+    empty: false,
+    emptyText: '所选时间范围内暂无数据',
+    minHeight: '160px',
+  },
+)
 
 const emit = defineEmits<{ retry: [] }>()
 </script>
@@ -38,5 +41,7 @@ const emit = defineEmits<{ retry: [] }>()
 </template>
 
 <style scoped>
-.async-state { width: 100%; }
+.async-state {
+  width: 100%;
+}
 </style>

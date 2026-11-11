@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.ai.token.usage.mapper.TokenUsageMapper">
+<mapper namespace="com.example.ai.token.mapper.TokenUsageMapper">
 
     <!-- 幂等写入：request_id 唯一键命中时不重复插入，也不改写历史账单 -->
-    <insert id="insert" parameterType="com.example.ai.token.usage.entity.TokenUsage">
+    <insert id="insert" parameterType="com.example.ai.token.entity.TokenUsage">
         INSERT INTO ai_token_usage
         (request_id, trace_id, user_id, conversation_id, agent_id, knowledge_base_id,
          business_scene, provider, model_name, model_type,
@@ -21,8 +21,40 @@
         ON DUPLICATE KEY UPDATE request_id = request_id
     </insert>
 
-    <select id="findByRequestId" resultType="com.example.ai.token.usage.entity.TokenUsage">
-        SELECT * FROM ai_token_usage WHERE request_id = #{requestId}
+    <select id="findByRequestId" resultType="com.example.ai.token.entity.TokenUsage">
+        SELECT id,
+               request_id,
+               trace_id,
+               user_id,
+               conversation_id,
+               business_scene,
+               provider,
+               model_name,
+               model_type,
+               input_tokens,
+               output_tokens,
+               total_tokens,
+               cached_input_tokens,
+               reasoning_tokens,
+               usage_status,
+               request_status,
+               latency_ms,
+               input_cost,
+               cached_input_cost,
+               output_cost,
+               total_cost,
+               currency,
+               pricing_version,
+               pricing_id,
+               error_code,
+               created_at,
+               agent_id,
+               knowledge_base_id,
+               cache_hit,
+               cache_saved_cost,
+               retry_count,
+               route_level
+        FROM ai_token_usage WHERE request_id = #{requestId}
     </select>
 
     <sql id="filters">
@@ -38,8 +70,40 @@
         </where>
     </sql>
 
-    <select id="page" resultType="com.example.ai.token.usage.entity.TokenUsage">
-        SELECT * FROM ai_token_usage
+    <select id="page" resultType="com.example.ai.token.entity.TokenUsage">
+        SELECT id,
+               request_id,
+               trace_id,
+               user_id,
+               conversation_id,
+               business_scene,
+               provider,
+               model_name,
+               model_type,
+               input_tokens,
+               output_tokens,
+               total_tokens,
+               cached_input_tokens,
+               reasoning_tokens,
+               usage_status,
+               request_status,
+               latency_ms,
+               input_cost,
+               cached_input_cost,
+               output_cost,
+               total_cost,
+               currency,
+               pricing_version,
+               pricing_id,
+               error_code,
+               created_at,
+               agent_id,
+               knowledge_base_id,
+               cache_hit,
+               cache_saved_cost,
+               retry_count,
+               route_level
+        FROM ai_token_usage
         <include refid="filters"/>
         ORDER BY ${q.sort}
         LIMIT #{limit} OFFSET #{offset}

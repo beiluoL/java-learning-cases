@@ -1,15 +1,18 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  label: string
-  value: string
-  sub?: string
-  tone?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
-  loading?: boolean
-}>(), {
-  sub: '',
-  tone: 'primary',
-  loading: false,
-})
+withDefaults(
+  defineProps<{
+    label: string
+    value: string
+    sub?: string
+    tone?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
+    loading?: boolean
+  }>(),
+  {
+    sub: '',
+    tone: 'primary',
+    loading: false,
+  },
+)
 </script>
 
 <template>
@@ -43,14 +46,30 @@ withDefaults(defineProps<{
   height: 2px;
   background: var(--tone);
 }
-.stat-card--primary { --tone: var(--color-primary); }
-.stat-card--success { --tone: var(--color-success); }
-.stat-card--warning { --tone: var(--color-warning); }
-.stat-card--danger  { --tone: var(--color-danger); }
-.stat-card--info    { --tone: var(--color-info); }
-.stat-card--neutral { --tone: #9ca3af; }
+.stat-card--primary {
+  --tone: var(--color-primary);
+}
+.stat-card--success {
+  --tone: var(--color-success);
+}
+.stat-card--warning {
+  --tone: var(--color-warning);
+}
+.stat-card--danger {
+  --tone: var(--color-danger);
+}
+.stat-card--info {
+  --tone: var(--color-info);
+}
+.stat-card--neutral {
+  --tone: #9ca3af;
+}
 
-.stat-card__head { display: flex; align-items: center; gap: var(--space-2); }
+.stat-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 .stat-card__dot {
   width: 7px;
   height: 7px;
@@ -89,6 +108,8 @@ withDefaults(defineProps<{
   animation: shimmer 1.2s linear infinite;
 }
 @keyframes shimmer {
-  to { background-position: -200% 0; }
+  to {
+    background-position: -200% 0;
+  }
 }
 </style>

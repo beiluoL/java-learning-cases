@@ -33,7 +33,12 @@ const columns: TableColumn[] = [
   { key: 'monthlyLimit', title: '月限额', align: 'right', render: (v) => formatMoney(v) },
   { key: 'perRequestLimit', title: '单请求限额', align: 'right', render: (v) => formatMoney(v) },
   { key: 'maxInputTokens', title: '最大输入 Token', align: 'right', render: (v) => formatToken(v) },
-  { key: 'maxOutputTokens', title: '最大输出 Token', align: 'right', render: (v) => formatToken(v) },
+  {
+    key: 'maxOutputTokens',
+    title: '最大输出 Token',
+    align: 'right',
+    render: (v) => formatToken(v),
+  },
   { key: 'allowOverrun', title: '允许超限', width: '100px' },
   { key: 'enabled', title: '状态', width: '90px' },
   { key: 'currency', title: '币种', width: '80px' },
@@ -159,8 +164,12 @@ async function disable(row: unknown) {
         <span class="text-muted">按 usageRate 着色：≥70% 警告、≥90% 危险</span>
       </div>
       <AsyncState
-        :loading="status.loading" :error="status.error" :error-trace-id="status.errorTraceId"
-        :empty="isEmptyOf(status)" empty-text="暂无预算状态数据" min-height="150px"
+        :loading="status.loading"
+        :error="status.error"
+        :error-trace-id="status.errorTraceId"
+        :empty="isEmptyOf(status)"
+        empty-text="暂无预算状态数据"
+        min-height="150px"
         @retry="status.execute"
       >
         <div class="budget-grid">
@@ -175,10 +184,22 @@ async function disable(row: unknown) {
             </div>
             <ProgressBar :value="s.usageRate" label="使用率" />
             <dl class="budget-card__stats">
-              <div><dt>限额 limitAmount</dt><dd class="mono">{{ formatMoney(s.limitAmount) }}</dd></div>
-              <div><dt>已用 usedAmount</dt><dd class="mono">{{ formatMoney(s.usedAmount) }}</dd></div>
-              <div><dt>预扣 reservedAmount</dt><dd class="mono">{{ formatMoney(s.reservedAmount) }}</dd></div>
-              <div><dt>剩余 remainingAmount</dt><dd class="mono">{{ formatMoney(s.remainingAmount) }}</dd></div>
+              <div>
+                <dt>限额 limitAmount</dt>
+                <dd class="mono">{{ formatMoney(s.limitAmount) }}</dd>
+              </div>
+              <div>
+                <dt>已用 usedAmount</dt>
+                <dd class="mono">{{ formatMoney(s.usedAmount) }}</dd>
+              </div>
+              <div>
+                <dt>预扣 reservedAmount</dt>
+                <dd class="mono">{{ formatMoney(s.reservedAmount) }}</dd>
+              </div>
+              <div>
+                <dt>剩余 remainingAmount</dt>
+                <dd class="mono">{{ formatMoney(s.remainingAmount) }}</dd>
+              </div>
             </dl>
           </div>
         </div>
@@ -195,24 +216,37 @@ async function disable(row: unknown) {
         <button class="btn btn--primary btn--sm" type="button" @click="openCreate">新增策略</button>
       </header>
       <DataTable
-        :columns="columns" :rows="list.data ?? []" row-key="id"
-        :loading="list.loading" :error="list.error" :error-trace-id="list.errorTraceId"
-        :empty="isEmptyOf(list)" empty-text="暂无预算策略，点击「新增策略」创建"
+        :columns="columns"
+        :rows="list.data ?? []"
+        row-key="id"
+        :loading="list.loading"
+        :error="list.error"
+        :error-trace-id="list.errorTraceId"
+        :empty="isEmptyOf(list)"
+        empty-text="暂无预算策略，点击「新增策略」创建"
         @retry="list.execute"
       >
         <template #cell-allowOverrun="{ value }">
-          <span class="badge" :class="value ? 'badge--warning' : 'badge--neutral'">{{ value ? '允许' : '禁止' }}</span>
+          <span class="badge" :class="value ? 'badge--warning' : 'badge--neutral'">{{
+            value ? '允许' : '禁止'
+          }}</span>
         </template>
         <template #cell-enabled="{ value }">
-          <span class="badge" :class="value ? 'badge--success' : 'badge--neutral'">{{ value ? '启用' : '停用' }}</span>
+          <span class="badge" :class="value ? 'badge--success' : 'badge--neutral'">{{
+            value ? '启用' : '停用'
+          }}</span>
         </template>
         <template #cell-actions="{ row }">
           <div class="row">
             <button class="btn btn--sm" type="button" @click.stop="openEdit(row)">编辑</button>
             <button
-              class="btn btn--sm btn--danger" type="button"
-              :disabled="!isEnabled(row)" @click.stop="disable(row)"
-            >停用</button>
+              class="btn btn--sm btn--danger"
+              type="button"
+              :disabled="!isEnabled(row)"
+              @click.stop="disable(row)"
+            >
+              停用
+            </button>
           </div>
         </template>
       </DataTable>
@@ -222,7 +256,11 @@ async function disable(row: unknown) {
     <Modal
       v-model="formOpen"
       :title="formMode === 'create' ? '新增预算策略' : '编辑预算策略'"
-      :subtitle="formMode === 'create' ? 'POST /api/admin/ai/budgets' : `PUT /api/admin/ai/budgets/${editingId}`"
+      :subtitle="
+        formMode === 'create'
+          ? 'POST /api/admin/ai/budgets'
+          : `PUT /api/admin/ai/budgets/${editingId}`
+      "
       width="640px"
     >
       <div v-if="formError" class="form-error" role="alert">
@@ -233,7 +271,9 @@ async function disable(row: unknown) {
         <label class="field">
           <span class="field__label">预算类型 *</span>
           <select v-model="form.budgetType" class="select">
-            <option v-for="o in BUDGET_TYPE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            <option v-for="o in BUDGET_TYPE_OPTIONS" :key="o.value" :value="o.value">
+              {{ o.label }}
+            </option>
           </select>
         </label>
         <label class="field">
@@ -269,14 +309,18 @@ async function disable(row: unknown) {
           <textarea v-model="form.remark" class="textarea" placeholder="可选" />
         </label>
         <div class="field--full row">
-          <label class="checkbox"><input v-model="form.allowOverrun" type="checkbox" /> 允许超限 allowOverrun</label>
-          <label class="checkbox"><input v-model="form.enabled" type="checkbox" /> 启用 enabled</label>
+          <label class="checkbox"
+            ><input v-model="form.allowOverrun" type="checkbox" /> 允许超限 allowOverrun</label
+          >
+          <label class="checkbox"
+            ><input v-model="form.enabled" type="checkbox" /> 启用 enabled</label
+          >
         </div>
       </div>
       <template #footer>
         <button class="btn" type="button" @click="formOpen = false">取消</button>
         <button class="btn btn--primary" type="button" :disabled="submitting" @click="submit">
-          {{ submitting ? '提交中…' : (formMode === 'create' ? '确认新增' : '保存修改') }}
+          {{ submitting ? '提交中…' : formMode === 'create' ? '确认新增' : '保存修改' }}
         </button>
       </template>
     </Modal>
@@ -284,16 +328,46 @@ async function disable(row: unknown) {
 </template>
 
 <style scoped>
-.budget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: var(--space-4); }
-.budget-card { padding: var(--space-4) var(--space-5); }
-.budget-card__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
-.budget-card__stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: var(--space-4); }
-.budget-card__stats dt { font-size: var(--font-xs); color: var(--color-text-muted); }
-.budget-card__stats dd { margin: 2px 0 0; font-size: var(--font-base); }
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+  gap: var(--space-4);
+}
+.budget-card {
+  padding: var(--space-4) var(--space-5);
+}
+.budget-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.budget-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: var(--space-4);
+}
+.budget-card__stats dt {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
+.budget-card__stats dd {
+  margin: 2px 0 0;
+  font-size: var(--font-base);
+}
 
-.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
-.field--full { grid-column: 1 / -1; }
-.form-error, .action-error {
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.field--full {
+  grid-column: 1 / -1;
+}
+.form-error,
+.action-error {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -307,6 +381,8 @@ async function disable(row: unknown) {
   font-size: var(--font-sm);
 }
 @media (max-width: 560px) {
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

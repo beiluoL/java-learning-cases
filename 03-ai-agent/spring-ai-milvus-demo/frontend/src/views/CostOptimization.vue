@@ -49,7 +49,13 @@ const strategyBarOption = computed<EChartsOption>(() => {
   const rows = summary.value?.strategies ?? []
   return barChartOption(
     rows.map((s) => s.displayName),
-    [{ name: '节省金额 (USD)', data: rows.map((s) => Number(s.savedCost) || 0), color: CHART_COLORS[2] }],
+    [
+      {
+        name: '节省金额 (USD)',
+        data: rows.map((s) => Number(s.savedCost) || 0),
+        color: CHART_COLORS[2],
+      },
+    ],
   )
 })
 
@@ -63,21 +69,62 @@ const strategyColumns: TableColumn[] = [
 
 const statColumns: TableColumn[] = [
   { key: 'displayName', title: '策略', width: '150px' },
-  { key: 'executionCount', title: '执行次数', align: 'right', width: '100px', render: (v) => formatCount(v) },
-  { key: 'beforeTokens', title: '优化前 Token', align: 'right', width: '130px', render: (v) => formatCount(v) },
-  { key: 'afterTokens', title: '优化后 Token', align: 'right', width: '130px', render: (v) => formatCount(v) },
-  { key: 'savedTokens', title: '节省 Token', align: 'right', width: '120px', render: (v) => formatCount(v) },
+  {
+    key: 'executionCount',
+    title: '执行次数',
+    align: 'right',
+    width: '100px',
+    render: (v) => formatCount(v),
+  },
+  {
+    key: 'beforeTokens',
+    title: '优化前 Token',
+    align: 'right',
+    width: '130px',
+    render: (v) => formatCount(v),
+  },
+  {
+    key: 'afterTokens',
+    title: '优化后 Token',
+    align: 'right',
+    width: '130px',
+    render: (v) => formatCount(v),
+  },
+  {
+    key: 'savedTokens',
+    title: '节省 Token',
+    align: 'right',
+    width: '120px',
+    render: (v) => formatCount(v),
+  },
   { key: 'savedCost', title: '节省金额', align: 'right', render: (v) => formatCurrency(v) },
   { key: 'measureKind', title: '口径', width: '130px' },
-  { key: 'lastExecutedAt', title: '最近执行', width: '168px', render: (v) => (v ? formatDateTime(v) : '—') },
+  {
+    key: 'lastExecutedAt',
+    title: '最近执行',
+    width: '168px',
+    render: (v) => (v ? formatDateTime(v) : '—'),
+  },
 ]
 
 const historyColumns: TableColumn[] = [
   { key: 'createdAt', title: '时间', width: '168px', render: (v) => formatDateTime(v) },
   { key: 'strategy', title: '策略', width: '190px' },
-  { key: 'beforeTokens', title: '前', align: 'right', width: '90px', render: (v) => formatCount(v) },
+  {
+    key: 'beforeTokens',
+    title: '前',
+    align: 'right',
+    width: '90px',
+    render: (v) => formatCount(v),
+  },
   { key: 'afterTokens', title: '后', align: 'right', width: '90px', render: (v) => formatCount(v) },
-  { key: 'savedTokens', title: '节省', align: 'right', width: '90px', render: (v) => formatCount(v) },
+  {
+    key: 'savedTokens',
+    title: '节省',
+    align: 'right',
+    width: '90px',
+    render: (v) => formatCount(v),
+  },
   { key: 'savedCost', title: '节省金额', align: 'right', render: (v) => formatCurrency(v) },
   { key: 'measureKind', title: '口径', width: '130px' },
 ]
@@ -94,7 +141,9 @@ const trialError = ref<string | null>(null)
 
 const trialOptions = computed(() =>
   (strategies.data ?? [])
-    .filter((s) => ['PROMPT_COMPRESSION', 'CONTEXT_COMPRESSION', 'RAG_CONTEXT_OPTIMIZE'].includes(s.strategy))
+    .filter((s) =>
+      ['PROMPT_COMPRESSION', 'CONTEXT_COMPRESSION', 'RAG_CONTEXT_OPTIMIZE'].includes(s.strategy),
+    )
     .map((s) => ({ value: s.strategy, label: s.displayName })),
 )
 
@@ -107,7 +156,10 @@ async function runTrial() {
   trialError.value = null
   trialResult.value = null
   try {
-    trialResult.value = await governanceApi.executeOptimization(trialStrategy.value, trialText.value)
+    trialResult.value = await governanceApi.executeOptimization(
+      trialStrategy.value,
+      trialText.value,
+    )
     history.execute()
   } catch (err) {
     trialError.value = toErrorMessage(err)
@@ -171,9 +223,13 @@ async function runTrial() {
       <ChartCard
         title="各策略节省金额"
         subtitle="/cost/optimization · summary.strategies[].savedCost"
-        :loading="overview.loading" :error="overview.error" :error-trace-id="overview.errorTraceId"
+        :loading="overview.loading"
+        :error="overview.error"
+        :error-trace-id="overview.errorTraceId"
         :empty="!overview.loading && !overview.error && (summary?.strategies?.length ?? 0) === 0"
-        empty-text="暂无优化执行记录" height="280px" @retry="overview.execute"
+        empty-text="暂无优化执行记录"
+        height="280px"
+        @retry="overview.execute"
       >
         <EChart :option="strategyBarOption" height="280px" />
       </ChartCard>
@@ -182,7 +238,9 @@ async function runTrial() {
         <header class="panel__header">
           <div>
             <h3 class="panel__title">策略试算</h3>
-            <p class="panel__subtitle">/cost-optimization/execute · 纯函数试算，结果标记 ESTIMATED，不写入任何账单</p>
+            <p class="panel__subtitle">
+              /cost-optimization/execute · 纯函数试算，结果标记 ESTIMATED，不写入任何账单
+            </p>
           </div>
         </header>
         <div class="panel__body trial__body">
@@ -190,7 +248,9 @@ async function runTrial() {
             <label class="field trial__select">
               <span class="field__label">策略</span>
               <select v-model="trialStrategy" class="select">
-                <option v-for="opt in trialOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                <option v-for="opt in trialOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.label }}
+                </option>
               </select>
             </label>
             <button class="btn btn--primary" :disabled="trialLoading" @click="runTrial">
@@ -204,10 +264,23 @@ async function runTrial() {
           <p v-if="trialError" class="trial__error">{{ trialError }}</p>
           <div v-if="trialResult" class="trial__result">
             <div class="trial__metrics">
-              <span>优化前 <strong class="mono">{{ formatCount(trialResult.beforeTokens) }}</strong></span>
-              <span>优化后 <strong class="mono">{{ formatCount(trialResult.afterTokens) }}</strong></span>
-              <span>节省 <strong class="mono">{{ formatCount(trialResult.savedTokens) }}</strong></span>
-              <span>预估金额 <strong class="mono">{{ formatCurrency(trialResult.estimatedSavedCost) }}</strong></span>
+              <span
+                >优化前
+                <strong class="mono">{{ formatCount(trialResult.beforeTokens) }}</strong></span
+              >
+              <span
+                >优化后
+                <strong class="mono">{{ formatCount(trialResult.afterTokens) }}</strong></span
+              >
+              <span
+                >节省 <strong class="mono">{{ formatCount(trialResult.savedTokens) }}</strong></span
+              >
+              <span
+                >预估金额
+                <strong class="mono">{{
+                  formatCurrency(trialResult.estimatedSavedCost)
+                }}</strong></span
+              >
             </div>
             <p class="trial__note">{{ trialResult.detail }}</p>
             <p class="trial__note text-muted">
@@ -222,12 +295,18 @@ async function runTrial() {
       <header class="panel__header">
         <div>
           <h3 class="panel__title">策略清单</h3>
-          <p class="panel__subtitle">/cost-optimization/strategies · 每条策略的触发条件与收益口径</p>
+          <p class="panel__subtitle">
+            /cost-optimization/strategies · 每条策略的触发条件与收益口径
+          </p>
         </div>
       </header>
       <DataTable
-        :columns="strategyColumns" :rows="strategies.data ?? []" row-key="strategy"
-        :loading="strategies.loading" :error="strategies.error" :error-trace-id="strategies.errorTraceId"
+        :columns="strategyColumns"
+        :rows="strategies.data ?? []"
+        row-key="strategy"
+        :loading="strategies.loading"
+        :error="strategies.error"
+        :error-trace-id="strategies.errorTraceId"
         :empty="!strategies.loading && !strategies.error && (strategies.data?.length ?? 0) === 0"
         @retry="strategies.execute"
       >
@@ -252,8 +331,12 @@ async function runTrial() {
         </div>
       </header>
       <DataTable
-        :columns="statColumns" :rows="summary?.strategies ?? []" row-key="strategy"
-        :loading="overview.loading" :error="overview.error" :error-trace-id="overview.errorTraceId"
+        :columns="statColumns"
+        :rows="summary?.strategies ?? []"
+        row-key="strategy"
+        :loading="overview.loading"
+        :error="overview.error"
+        :error-trace-id="overview.errorTraceId"
         :empty="!overview.loading && !overview.error && (summary?.strategies?.length ?? 0) === 0"
         empty-text="暂无优化执行记录（只有真实产生节省时才会落库，不虚报）"
         @retry="overview.execute"
@@ -274,8 +357,12 @@ async function runTrial() {
         </div>
       </header>
       <DataTable
-        :columns="historyColumns" :rows="history.data?.records ?? []" row-key="id"
-        :loading="history.loading" :error="history.error" :error-trace-id="history.errorTraceId"
+        :columns="historyColumns"
+        :rows="history.data?.records ?? []"
+        row-key="id"
+        :loading="history.loading"
+        :error="history.error"
+        :error-trace-id="history.errorTraceId"
         :empty="!history.loading && !history.error && (history.data?.records?.length ?? 0) === 0"
         empty-text="当前没有产生实际节省的优化记录"
         @retry="history.execute"
@@ -291,11 +378,29 @@ async function runTrial() {
 </template>
 
 <style scoped>
-.trial { display: flex; flex-direction: column; }
-.trial__body { display: flex; flex-direction: column; gap: var(--space-3); }
-.trial__row { display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap; }
-.trial__select { min-width: 200px; flex: 1; }
-.trial__error { font-size: var(--font-sm); color: var(--color-danger); }
+.trial {
+  display: flex;
+  flex-direction: column;
+}
+.trial__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.trial__row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.trial__select {
+  min-width: 200px;
+  flex: 1;
+}
+.trial__error {
+  font-size: var(--font-sm);
+  color: var(--color-danger);
+}
 .trial__result {
   padding: var(--space-3);
   border: 1px solid var(--color-border);
@@ -309,6 +414,13 @@ async function runTrial() {
   font-size: var(--font-sm);
   color: var(--color-text-secondary);
 }
-.trial__metrics strong { color: var(--color-text); }
-.trial__note { margin-top: 6px; font-size: var(--font-sm); color: var(--color-text-secondary); word-break: break-all; }
+.trial__metrics strong {
+  color: var(--color-text);
+}
+.trial__note {
+  margin-top: 6px;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  word-break: break-all;
+}
 </style>

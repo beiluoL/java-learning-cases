@@ -1,7 +1,7 @@
 package com.example.ai.common;
 
-import com.example.ai.token.cost.dto.CostBreakdown;
-import com.example.ai.token.usage.entity.TokenUsage;
+import com.example.ai.cost.dto.CostBreakdown;
+import com.example.ai.token.entity.TokenUsage;
 
 import java.math.BigDecimal;
 import java.util.List;

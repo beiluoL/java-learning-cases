@@ -140,6 +140,33 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <!-- Checkstyle：静态代码规范检查。
+                 规则集见 config/checkstyle/checkstyle.xml，与
+                 docs/engineering/BACKEND_CODING_STANDARDS.md 对应。
+
+                 ⚠️ 刻意不绑定到 verify 生命周期：
+                 本机网络无法下载该插件的全部传递依赖（javax.annotation-api / cdi-api /
+                 xbean-reflect 持续 TLS 握手失败），一旦绑定会让 `mvn verify` 整体不可用，
+                 连带 scripts/verify.sh 失效。因此改为显式调用：
+                     mvn -B checkstyle:check
+                 由 scripts/check-backend.sh 负责调用；依赖可解析时违规即阻断，
+                 不可解析时降级为 WARN（见 QUALITY_GATE.md §8）。 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <configLocation>${project.basedir}/config/checkstyle/checkstyle.xml</configLocation>
+                    <!-- 存量技术债抑制台账，只能删不能加（见文件头注释） -->
+                    <suppressionsLocation>${project.basedir}/config/checkstyle/suppressions.xml</suppressionsLocation>
+                    <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>error</violationSeverity>
+                    <includeResources>false</includeResources>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

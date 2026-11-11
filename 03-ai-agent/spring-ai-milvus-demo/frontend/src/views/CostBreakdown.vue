@@ -50,43 +50,84 @@ const savedCost = computed(() => breakdown.data?.savedCost ?? '')
 const costPieItems = computed(() =>
   (breakdown.data?.items ?? [])
     .filter((i) => i.costKind !== 'SAVED')
-    .map((i) => ({ name: `${i.entryType} · ${costKindLabel[i.costKind] ?? i.costKind}`, value: toNumber(i.amount) })),
+    .map((i) => ({
+      name: `${i.entryType} · ${costKindLabel[i.costKind] ?? i.costKind}`,
+      value: toNumber(i.amount),
+    })),
 )
 
 const costPieOption = computed<EChartsOption>(() => pieChartOption(costPieItems.value))
 
 const userBarOption = computed<EChartsOption>(() =>
-  hbarChartOption((users.data ?? []).map((u) => ({ name: u.userId, value: toNumber(u.totalCost) })), CHART_COLORS[1]),
+  hbarChartOption(
+    (users.data ?? []).map((u) => ({ name: u.userId, value: toNumber(u.totalCost) })),
+    CHART_COLORS[1],
+  ),
 )
 
 const modelBarOption = computed<EChartsOption>(() =>
-  hbarChartOption((models.data ?? []).map((m) => ({ name: m.modelName, value: toNumber(m.totalCost) })), CHART_COLORS[0]),
+  hbarChartOption(
+    (models.data ?? []).map((m) => ({ name: m.modelName, value: toNumber(m.totalCost) })),
+    CHART_COLORS[0],
+  ),
 )
 
 const scenePieOption = computed<EChartsOption>(() =>
-  pieChartOption((scenes.data ?? []).map((s) => ({ name: s.businessScene, value: toNumber(s.totalCost) }))),
+  pieChartOption(
+    (scenes.data ?? []).map((s) => ({ name: s.businessScene, value: toNumber(s.totalCost) })),
+  ),
 )
 
 const itemColumns: TableColumn[] = [
   { key: 'entryType', title: '账务类型', width: '170px' },
   { key: 'costKind', title: '口径', width: '150px' },
-  { key: 'entryCount', title: '笔数', align: 'right', width: '90px', render: (v) => formatCount(v) },
+  {
+    key: 'entryCount',
+    title: '笔数',
+    align: 'right',
+    width: '90px',
+    render: (v) => formatCount(v),
+  },
   { key: 'amount', title: '金额', align: 'right', render: (v) => formatCurrency(v) },
-  { key: 'costRatio', title: '占比', align: 'right', width: '100px', render: (v) => formatRatio(v) },
+  {
+    key: 'costRatio',
+    title: '占比',
+    align: 'right',
+    width: '100px',
+    render: (v) => formatRatio(v),
+  },
 ]
 
 const userColumns: TableColumn[] = [
   { key: 'userId', title: '用户', width: '180px' },
-  { key: 'requestCount', title: '请求次数', align: 'right', width: '110px', render: (v) => formatCount(v) },
+  {
+    key: 'requestCount',
+    title: '请求次数',
+    align: 'right',
+    width: '110px',
+    render: (v) => formatCount(v),
+  },
   { key: 'totalCost', title: '成本', align: 'right', render: (v) => formatCurrency(v) },
-  { key: 'costRatio', title: '占比', align: 'right', width: '100px', render: (v) => formatRatio(v) },
+  {
+    key: 'costRatio',
+    title: '占比',
+    align: 'right',
+    width: '100px',
+    render: (v) => formatRatio(v),
+  },
 ]
 
 const infraColumns: TableColumn[] = [
   { key: 'summaryDate', title: '日期', width: '120px' },
   { key: 'dimension', title: '维度', width: '110px' },
   { key: 'dimensionKey', title: '维度值', width: '160px' },
-  { key: 'requestCount', title: '请求', align: 'right', width: '90px', render: (v) => formatCount(v) },
+  {
+    key: 'requestCount',
+    title: '请求',
+    align: 'right',
+    width: '90px',
+    render: (v) => formatCount(v),
+  },
   { key: 'totalTokens', title: 'Token', align: 'right', render: (v) => formatCount(v) },
   { key: 'totalCost', title: '成本', align: 'right', render: (v) => formatCurrency(v) },
 ]
@@ -140,7 +181,11 @@ const infraColumns: TableColumn[] = [
       />
       <StatCard
         label="日预算耗尽预计"
-        :value="forecast.data?.dailyExhaustionEtaHours ? `${forecast.data.dailyExhaustionEtaHours} 小时` : '—'"
+        :value="
+          forecast.data?.dailyExhaustionEtaHours
+            ? `${forecast.data.dailyExhaustionEtaHours} 小时`
+            : '—'
+        "
         sub="剩余额度 ÷ 今日每小时消耗速度"
         tone="neutral"
         :loading="forecast.loading"
@@ -151,17 +196,25 @@ const infraColumns: TableColumn[] = [
       <ChartCard
         title="成本构成占比"
         subtitle="/cost/breakdown · 仅真实账单与分摊（SAVED 不参与）"
-        :loading="breakdown.loading" :error="breakdown.error" :error-trace-id="breakdown.errorTraceId"
+        :loading="breakdown.loading"
+        :error="breakdown.error"
+        :error-trace-id="breakdown.errorTraceId"
         :empty="!breakdown.loading && !breakdown.error && costPieItems.length === 0"
-        empty-text="所选时间范围内没有成本流水" height="300px" @retry="breakdown.execute"
+        empty-text="所选时间范围内没有成本流水"
+        height="300px"
+        @retry="breakdown.execute"
       >
         <EChart :option="costPieOption" height="300px" />
       </ChartCard>
       <ChartCard
         title="业务场景成本占比"
         subtitle="/cost/scenes · 按 totalCost 聚合"
-        :loading="scenes.loading" :error="scenes.error" :error-trace-id="scenes.errorTraceId"
-        :empty="isEmptyOf(scenes)" height="300px" @retry="scenes.execute"
+        :loading="scenes.loading"
+        :error="scenes.error"
+        :error-trace-id="scenes.errorTraceId"
+        :empty="isEmptyOf(scenes)"
+        height="300px"
+        @retry="scenes.execute"
       >
         <EChart :option="scenePieOption" height="300px" />
       </ChartCard>
@@ -171,14 +224,23 @@ const infraColumns: TableColumn[] = [
       <header class="panel__header">
         <div>
           <h3 class="panel__title">构成明细</h3>
-          <p class="panel__subtitle">/cost/breakdown · 按账务类型与口径聚合，笔数与金额均可回溯到流水</p>
+          <p class="panel__subtitle">
+            /cost/breakdown · 按账务类型与口径聚合，笔数与金额均可回溯到流水
+          </p>
         </div>
       </header>
       <DataTable
-        :columns="itemColumns" :rows="breakdown.data?.items ?? []" row-key="entryType"
-        :loading="breakdown.loading" :error="breakdown.error" :error-trace-id="breakdown.errorTraceId"
-        :empty="!breakdown.loading && !breakdown.error && (breakdown.data?.items?.length ?? 0) === 0"
-        empty-text="所选时间范围内没有账务流水" @retry="breakdown.execute"
+        :columns="itemColumns"
+        :rows="breakdown.data?.items ?? []"
+        row-key="entryType"
+        :loading="breakdown.loading"
+        :error="breakdown.error"
+        :error-trace-id="breakdown.errorTraceId"
+        :empty="
+          !breakdown.loading && !breakdown.error && (breakdown.data?.items?.length ?? 0) === 0
+        "
+        empty-text="所选时间范围内没有账务流水"
+        @retry="breakdown.execute"
       >
         <template #cell-costKind="{ value }">
           <span class="badge" :class="'badge--' + costKindTone(String(value))">
@@ -192,16 +254,24 @@ const infraColumns: TableColumn[] = [
       <ChartCard
         title="用户成本排行"
         subtitle="/cost/users · 用于归因到具体用户"
-        :loading="users.loading" :error="users.error" :error-trace-id="users.errorTraceId"
-        :empty="isEmptyOf(users)" height="300px" @retry="users.execute"
+        :loading="users.loading"
+        :error="users.error"
+        :error-trace-id="users.errorTraceId"
+        :empty="isEmptyOf(users)"
+        height="300px"
+        @retry="users.execute"
       >
         <EChart :option="userBarOption" height="300px" />
       </ChartCard>
       <ChartCard
         title="模型成本排行"
         subtitle="/cost/models · 用于归因到具体模型"
-        :loading="models.loading" :error="models.error" :error-trace-id="models.errorTraceId"
-        :empty="isEmptyOf(models)" height="300px" @retry="models.execute"
+        :loading="models.loading"
+        :error="models.error"
+        :error-trace-id="models.errorTraceId"
+        :empty="isEmptyOf(models)"
+        height="300px"
+        @retry="models.execute"
       >
         <EChart :option="modelBarOption" height="300px" />
       </ChartCard>
@@ -215,9 +285,14 @@ const infraColumns: TableColumn[] = [
         </div>
       </header>
       <DataTable
-        :columns="userColumns" :rows="users.data ?? []" row-key="userId"
-        :loading="users.loading" :error="users.error" :error-trace-id="users.errorTraceId"
-        :empty="isEmptyOf(users)" @retry="users.execute"
+        :columns="userColumns"
+        :rows="users.data ?? []"
+        row-key="userId"
+        :loading="users.loading"
+        :error="users.error"
+        :error-trace-id="users.errorTraceId"
+        :empty="isEmptyOf(users)"
+        @retry="users.execute"
       />
     </section>
 
@@ -226,13 +301,18 @@ const infraColumns: TableColumn[] = [
         <div>
           <h3 class="panel__title">每日汇总（五维度）</h3>
           <p class="panel__subtitle">
-            /cost/daily-summary · 由定时任务每小时重建；预测口径：{{ forecast.data?.monthly.basis || '—' }}
+            /cost/daily-summary · 由定时任务每小时重建；预测口径：{{
+              forecast.data?.monthly.basis || '—'
+            }}
           </p>
         </div>
       </header>
       <DataTable
-        :columns="infraColumns" :rows="infrastructure.data ?? []" row-key="id"
-        :loading="infrastructure.loading" :error="infrastructure.error"
+        :columns="infraColumns"
+        :rows="infrastructure.data ?? []"
+        row-key="id"
+        :loading="infrastructure.loading"
+        :error="infrastructure.error"
         :error-trace-id="infrastructure.errorTraceId"
         :empty="isEmptyOf(infrastructure)"
         empty-text="尚无日汇总数据，可点击下方按钮重建"

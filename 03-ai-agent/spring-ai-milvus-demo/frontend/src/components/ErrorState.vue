@@ -9,8 +9,17 @@ const emit = defineEmits<{ retry: [] }>()
 
 <template>
   <div class="state" :style="{ minHeight: height }" role="alert">
-    <svg class="state__icon" width="34" height="34" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+    <svg
+      class="state__icon"
+      width="34"
+      height="34"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7.5v5" />
       <circle cx="12" cy="16.4" r="0.7" fill="currentColor" stroke="none" />
@@ -32,9 +41,24 @@ const emit = defineEmits<{ retry: [] }>()
   padding: var(--space-4);
   text-align: center;
 }
-.state__icon { color: var(--color-danger); }
-.state__title { font-size: var(--font-md); font-weight: var(--font-weight-semibold); }
-.state__desc { max-width: 460px; font-size: var(--font-sm); color: var(--color-text-secondary); word-break: break-word; }
-.state__trace { font-size: var(--font-xs); color: var(--color-text-muted); }
-.state .btn { margin-top: var(--space-2); }
+.state__icon {
+  color: var(--color-danger);
+}
+.state__title {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+}
+.state__desc {
+  max-width: 460px;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  word-break: break-word;
+}
+.state__trace {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
+.state .btn {
+  margin-top: var(--space-2);
+}
 </style>

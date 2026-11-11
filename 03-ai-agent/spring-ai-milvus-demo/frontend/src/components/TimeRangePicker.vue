@@ -9,16 +9,18 @@ const customOpen = ref(store.preset === 'custom')
 const draftStart = ref('')
 const draftEnd = ref('')
 
-const isCustomActive = computed(() =>
-  customOpen.value || store.preset === 'custom',
-)
+const isCustomActive = computed(() => customOpen.value || store.preset === 'custom')
 
-watch(customOpen, (open) => {
-  if (!open) return
-  const now = new Date()
-  draftStart.value = store.customStart || toLocalInput(new Date(now.getTime() - 6 * 86400000))
-  draftEnd.value = store.customEnd || toLocalInput(now)
-}, { immediate: true })
+watch(
+  customOpen,
+  (open) => {
+    if (!open) return
+    const now = new Date()
+    draftStart.value = store.customStart || toLocalInput(new Date(now.getTime() - 6 * 86400000))
+    draftEnd.value = store.customEnd || toLocalInput(now)
+  },
+  { immediate: true },
+)
 
 function select(preset: RangePreset) {
   if (preset === 'custom') {
@@ -51,7 +53,9 @@ function isActive(preset: RangePreset): boolean {
         class="range-picker__btn"
         :class="{ 'is-active': isActive(p.value) }"
         @click="select(p.value)"
-      >{{ p.label }}</button>
+      >
+        {{ p.label }}
+      </button>
     </div>
 
     <div v-if="customOpen" class="range-picker__custom">
@@ -66,7 +70,12 @@ function isActive(preset: RangePreset): boolean {
 </template>
 
 <style scoped>
-.range-picker { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.range-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
 .range-picker__presets {
   display: inline-flex;
   gap: 2px;
@@ -84,16 +93,27 @@ function isActive(preset: RangePreset): boolean {
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   white-space: nowrap;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
-.range-picker__btn:hover { color: var(--color-primary); }
+.range-picker__btn:hover {
+  color: var(--color-primary);
+}
 .range-picker__btn.is-active {
   background: var(--color-surface);
   color: var(--color-primary);
   box-shadow: var(--shadow-sm);
 }
-.range-picker__custom { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
-.range-picker__custom .input { width: 196px; }
+.range-picker__custom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.range-picker__custom .input {
+  width: 196px;
+}
 .range-picker__label {
   margin-left: auto;
   font-size: var(--font-xs);
@@ -101,7 +121,11 @@ function isActive(preset: RangePreset): boolean {
   white-space: nowrap;
 }
 @media (max-width: 640px) {
-  .range-picker__custom .input { width: 160px; }
-  .range-picker__label { margin-left: 0; }
+  .range-picker__custom .input {
+    width: 160px;
+  }
+  .range-picker__label {
+    margin-left: 0;
+  }
 }
 </style>

@@ -2,8 +2,16 @@ import type { EChartsOption } from 'echarts'
 
 /** 图表色板（与设计 token 一致），纯 UI 常量 */
 export const CHART_COLORS: string[] = [
-  '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444',
-  '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16', '#f97316',
+  '#4f46e5',
+  '#0ea5e9',
+  '#10b981',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#06b6d4',
+  '#ec4899',
+  '#84cc16',
+  '#f97316',
 ]
 
 export interface ChartSeries {
@@ -68,7 +76,10 @@ export function barChartOption(labels: string[], series: ChartSeries[]): ECharts
   const option: EChartsOption = {
     color: CHART_COLORS,
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    legend: series.length > 1 ? { data: series.map((s) => s.name), top: 0, right: 0, ...legendStyle } : { show: false },
+    legend:
+      series.length > 1
+        ? { data: series.map((s) => s.name), top: 0, right: 0, ...legendStyle }
+        : { show: false },
     grid: { left: 8, right: 18, top: series.length > 1 ? 34 : 12, bottom: 6, containLabel: true },
     xAxis: {
       type: 'category',
@@ -88,7 +99,10 @@ export function barChartOption(labels: string[], series: ChartSeries[]): ECharts
       name: s.name,
       type: 'bar' as const,
       barMaxWidth: 30,
-      itemStyle: { color: s.color ?? CHART_COLORS[i % CHART_COLORS.length], borderRadius: [3, 3, 0, 0] },
+      itemStyle: {
+        color: s.color ?? CHART_COLORS[i % CHART_COLORS.length],
+        borderRadius: [3, 3, 0, 0],
+      },
       data: s.data,
     })),
   }

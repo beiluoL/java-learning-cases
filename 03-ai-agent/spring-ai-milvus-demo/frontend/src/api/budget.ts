@@ -7,13 +7,11 @@ export type BudgetPayload = Omit<BudgetPolicy, 'id'>
 export const budgetApi = {
   list: () => http.get<BudgetPolicy[]>('/api/admin/ai/budgets'),
 
-  detail: (id: string) =>
-    http.get<BudgetPolicy>(`/api/admin/ai/budgets/${encodeURIComponent(id)}`),
+  detail: (id: string) => http.get<BudgetPolicy>(`/api/admin/ai/budgets/${encodeURIComponent(id)}`),
 
   status: () => http.get<BudgetStatus[]>('/api/admin/ai/budgets/status'),
 
-  create: (payload: BudgetPayload) =>
-    http.post<BudgetPolicy>('/api/admin/ai/budgets', payload),
+  create: (payload: BudgetPayload) => http.post<BudgetPolicy>('/api/admin/ai/budgets', payload),
 
   update: (id: string, payload: BudgetPayload) =>
     http.put<BudgetPolicy>(`/api/admin/ai/budgets/${encodeURIComponent(id)}`, payload),

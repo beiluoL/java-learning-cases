@@ -21,8 +21,16 @@ const groups = computed(() =>
     <aside class="sidebar">
       <div class="brand">
         <span class="brand__mark" aria-hidden="true">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff"
-            stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+          <svg
+            width="21"
+            height="21"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#ffffff"
+            stroke-width="1.7"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
             <path d="M12 2.5l8 4.5v10l-8 4.5-8-4.5V7z" />
             <path d="M12 12l8-4.5M12 12v9.5M12 12L4 7.5" />
           </svg>
@@ -67,7 +75,8 @@ const groups = computed(() =>
         <div class="topbar__env">
           <span class="topbar__pulse" />
           <span>DEMO 数据环境 · 价格不代表供应商真实报价</span>
-        </div>      </header>
+        </div>
+      </header>
 
       <main class="content">
         <div class="content__inner">
@@ -112,11 +121,25 @@ const groups = computed(() =>
   box-shadow: 0 4px 10px rgba(79, 70, 229, 0.28);
   flex-shrink: 0;
 }
-.brand__name { font-size: var(--font-md); font-weight: var(--font-weight-semibold); letter-spacing: -0.01em; }
-.brand__sub { font-size: var(--font-xs); color: var(--color-text-muted); }
+.brand__name {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.01em;
+}
+.brand__sub {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
 
-.nav { flex: 1; min-height: 0; overflow-y: auto; padding: var(--space-4) var(--space-3); }
-.nav__group + .nav__group { margin-top: var(--space-5); }
+.nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-3);
+}
+.nav__group + .nav__group {
+  margin-top: var(--space-5);
+}
 .nav__group-title {
   padding: 0 10px;
   margin-bottom: 8px;
@@ -136,16 +159,28 @@ const groups = computed(() =>
   font-size: var(--font-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
-.nav__item:hover { background: var(--color-surface-hover); }
+.nav__item:hover {
+  background: var(--color-surface-hover);
+}
 .nav__item.is-active {
   background: var(--color-primary-soft);
   color: var(--color-primary-hover);
   font-weight: var(--font-weight-semibold);
 }
-.nav__dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; flex-shrink: 0; }
-.nav__item.is-active .nav__dot { background: var(--color-primary); }
+.nav__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+.nav__item.is-active .nav__dot {
+  background: var(--color-primary);
+}
 
 .sidebar__foot {
   padding: var(--space-4) var(--space-5);
@@ -156,7 +191,11 @@ const groups = computed(() =>
 }
 
 /* ---------- 主区 ---------- */
-.main { display: flex; flex-direction: column; min-width: 0; }
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
 .topbar {
   position: sticky;
   top: 0;
@@ -170,9 +209,20 @@ const groups = computed(() =>
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
-.topbar__crumb { display: flex; align-items: center; gap: 8px; font-size: var(--font-base); color: var(--color-text-muted); }
-.topbar__crumb strong { color: var(--color-text); font-weight: var(--font-weight-semibold); }
-.topbar__sep { color: #d1d5db; }
+.topbar__crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-base);
+  color: var(--color-text-muted);
+}
+.topbar__crumb strong {
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}
+.topbar__sep {
+  color: #d1d5db;
+}
 .topbar__env {
   display: inline-flex;
   align-items: center;
@@ -184,30 +234,72 @@ const groups = computed(() =>
   font-size: var(--font-xs);
   color: var(--color-text-secondary);
 }
-.topbar__pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--color-warning); flex-shrink: 0; }
+.topbar__pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  flex-shrink: 0;
+}
 
-.content { flex: 1; min-width: 0; padding: var(--space-6); }
-.content__inner { width: 100%; max-width: var(--content-max-width); margin: 0 auto; }
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-6);
+}
+.content__inner {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
 
 /* ---------- 移动端 ---------- */
 @media (max-width: 900px) {
-  .app-shell { grid-template-columns: 1fr; }
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
   .sidebar {
     position: static;
     height: auto;
     border-right: none;
     border-bottom: 1px solid var(--color-border);
   }
-  .brand { padding: 10px var(--space-4); }
-  .nav { display: flex; flex-wrap: wrap; gap: var(--space-3); padding: 8px var(--space-4); }
-  .nav__group { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-  .nav__group + .nav__group { margin-top: 0; }
-  .nav__group-title, .sidebar__foot { display: none; }
-  .nav__item { margin: 0; padding: 6px 10px; }
-  .content { padding: var(--space-4); }
-  .topbar { padding: 0 var(--space-4); }
+  .brand {
+    padding: 10px var(--space-4);
+  }
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: 8px var(--space-4);
+  }
+  .nav__group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .nav__group + .nav__group {
+    margin-top: 0;
+  }
+  .nav__group-title,
+  .sidebar__foot {
+    display: none;
+  }
+  .nav__item {
+    margin: 0;
+    padding: 6px 10px;
+  }
+  .content {
+    padding: var(--space-4);
+  }
+  .topbar {
+    padding: 0 var(--space-4);
+  }
 }
 @media (max-width: 560px) {
-  .topbar__env { display: none; }
+  .topbar__env {
+    display: none;
+  }
 }
 </style>

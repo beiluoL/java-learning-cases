@@ -26,8 +26,9 @@ export function formatCurrency(value: unknown, currency = 'USD'): string {
   return `${prefix}${formatMoney(value)}`
 }
 
-/** Token / 次数：整数千分位 */
+/** Token / 次数：整数千分位。null/undefined/'' 返回占位符，不能显示成 0（0 表示「确实为零」）。 */
 export function formatToken(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '—'
   const n = Number(value)
   if (!Number.isFinite(n)) return '—'
   return Math.round(n).toLocaleString('en-US')

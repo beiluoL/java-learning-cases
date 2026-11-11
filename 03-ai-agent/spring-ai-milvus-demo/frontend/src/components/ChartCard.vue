@@ -1,26 +1,29 @@
 <script setup lang="ts">
 import AsyncState from './AsyncState.vue'
 
-withDefaults(defineProps<{
-  title: string
-  subtitle?: string
-  loading?: boolean
-  error?: string | null
-  errorTraceId?: string
-  empty?: boolean
-  emptyText?: string
-  height?: string
-  bodyPadding?: boolean
-}>(), {
-  subtitle: '',
-  loading: false,
-  error: null,
-  errorTraceId: '',
-  empty: false,
-  emptyText: '所选时间范围内暂无数据',
-  height: '280px',
-  bodyPadding: false,
-})
+withDefaults(
+  defineProps<{
+    title: string
+    subtitle?: string
+    loading?: boolean
+    error?: string | null
+    errorTraceId?: string
+    empty?: boolean
+    emptyText?: string
+    height?: string
+    bodyPadding?: boolean
+  }>(),
+  {
+    subtitle: '',
+    loading: false,
+    error: null,
+    errorTraceId: '',
+    empty: false,
+    emptyText: '所选时间范围内暂无数据',
+    height: '280px',
+    bodyPadding: false,
+  },
+)
 
 const emit = defineEmits<{ retry: [] }>()
 </script>
@@ -51,8 +54,22 @@ const emit = defineEmits<{ retry: [] }>()
 </template>
 
 <style scoped>
-.chart-card { display: flex; flex-direction: column; min-width: 0; }
-.chart-card__actions { display: flex; align-items: center; gap: var(--space-2); }
-.chart-card__body { flex: 1; min-width: 0; padding: var(--space-2) var(--space-2) var(--space-3); }
-.chart-card__body--padded { padding: var(--space-5); }
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.chart-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.chart-card__body {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-2) var(--space-3);
+}
+.chart-card__body--padded {
+  padding: var(--space-5);
+}
 </style>

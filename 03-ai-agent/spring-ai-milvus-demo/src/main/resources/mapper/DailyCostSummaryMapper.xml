@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.ai.token.analytics.mapper.DailyCostSummaryMapper">
+<mapper namespace="com.example.ai.analytics.mapper.DailyCostSummaryMapper">
 
     <!-- 重建口径：只用真实账单表聚合，不造数；ON DUPLICATE 保证幂等可重跑 -->
 
@@ -122,8 +122,23 @@
             total_cost = VALUES(total_cost), cache_saved_cost = VALUES(cache_saved_cost)
     </insert>
 
-    <select id="listByRange" resultType="com.example.ai.token.analytics.entity.DailyCostSummary">
-        SELECT * FROM ai_cost_daily_summary
+    <select id="listByRange" resultType="com.example.ai.analytics.entity.DailyCostSummary">
+        SELECT id,
+               summary_date,
+               dimension,
+               dimension_key,
+               request_count,
+               success_count,
+               failed_count,
+               input_tokens,
+               output_tokens,
+               cached_tokens,
+               total_tokens,
+               total_cost,
+               cache_saved_cost,
+               created_at,
+               updated_at
+        FROM ai_cost_daily_summary
         WHERE dimension = #{dimension}
           AND summary_date &gt;= #{from} AND summary_date &lt;= #{to}
         ORDER BY summary_date ASC

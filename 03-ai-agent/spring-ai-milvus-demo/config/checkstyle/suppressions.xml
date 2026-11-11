@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<!--
+  存量技术债抑制台账
+  ============================================================================
+  本文件的每一条 <suppress> 都是一笔「已登记、待偿还」的技术债，不是豁免。
+
+  为什么用抑制文件而不是放宽规则阈值：
+    - 规则本身保持严格（ParameterNumber max=7），新增代码超过 7 个参数
+      会被立即阻断 —— 这正是「新增代码必须符合规范」的落地方式。
+    - 存量债务按文件显式登记在版本控制里，可审计、可追踪、可逐条删除。
+    - 若改成 max=18 让存量通过，等于同时放过了所有新代码，门禁失去意义
+      （违反 AI_AGENT_DEVELOPMENT_RULES.md R-04）。
+
+  维护铁律：
+    1. 只能删，不能加。新增违规一律改代码，不许扩本文件。
+    2. 每条必须写明 B6 批次处理方式（拆参数对象 / 改 record 聚合）。
+    3. 删除后必须重跑 ./scripts/verify.sh 确认无回归。
+  ============================================================================
+-->
+<suppressions>
+
+    <!-- ========================================================================
+         债务 D-1：长参数列表（ParameterNumber，目标 ≤7，共 14 处，最高 18）
+         成因：Mapper 接口按 @Param 逐参数绑定；Controller 透传筛选条件；
+               Service 早期未用聚合对象。
+         偿还：B6 批次改为 record 聚合参数（如 ChatRequest / CostQuery），
+               或改为 MyBatis 的实体条件包装器。全部处理完后删除本节。
+         ======================================================================== -->
+
+    <!-- AiChatService 92:12 = 18 个参数（全项目最高），350:37 = 8 个 -->
+    <suppress checks="ParameterNumber" files="chat[\\/]service[\\/]AiChatService\.java"/>
+
+    <!-- TokenBudgetService 67:12 = 13 个参数 -->
+    <suppress checks="ParameterNumber" files="budget[\\/]TokenBudgetService\.java"/>
+
+    <!-- CostAnalyticsController 81:48 / TokenUsageAdminController 34:48 = 各 12 个（Controller 透传） -->
+    <suppress checks="ParameterNumber" files="analytics[\\/]controller[\\/]CostAnalyticsController\.java"/>
+    <suppress checks="ParameterNumber" files="analytics[\\/]controller[\\/]TokenUsageAdminController\.java"/>
+
+    <!-- CostOptimizationService 50:12 = 11 个，164:17 = 8 个 -->
+    <suppress checks="ParameterNumber" files="optimization[\\/]CostOptimizationService\.java"/>
+
+    <!-- CostAlertService 49/62/101 = 8/9/8 个；CostAlertMapper 26:21 = 8 个 -->
+    <suppress checks="ParameterNumber" files="alert[\\/]CostAlertService\.java"/>
+    <suppress checks="ParameterNumber" files="alert[\\/]mapper[\\/]CostAlertMapper\.java"/>
+
+    <!-- 单点 8 个参数（各 1 处）：Service 内部聚合方法 -->
+    <suppress checks="ParameterNumber" files="analytics[\\/]service[\\/]CostAnalyticsService\.java"/>
+    <suppress checks="ParameterNumber" files="analytics[\\/]service[\\/]CostGovernanceService\.java"/>
+    <suppress checks="ParameterNumber" files="cost[\\/]CostLedgerService\.java"/>
+
+    <!--
+      注意：以下文件【不】在抑制范围内，它们当前已合规，新增代码必须继续保持：
+        common/GlobalExceptionHandler、budget/service/BudgetPolicyService、
+        budget/controller/*、protection/*、agent/AgentCostTracker 等
+    -->
+
+</suppressions>

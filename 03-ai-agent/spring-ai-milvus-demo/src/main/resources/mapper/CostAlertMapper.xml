@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.ai.token.cost.mapper.CostAlertMapper">
+<mapper namespace="com.example.ai.alert.mapper.CostAlertMapper">
 
-    <insert id="insert" parameterType="com.example.ai.token.cost.entity.CostAlert"
+    <insert id="insert" parameterType="com.example.ai.alert.entity.CostAlert"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO ai_cost_alert
         (request_id, alert_type, alert_level, target_type, budget_type, target_id, message, amount,
@@ -12,12 +12,52 @@
          #{thresholdValue}, #{currentValue}, #{severity}, #{status}, #{occurrenceCount}, #{fingerprint}, #{lastSeenAt})
     </insert>
 
-    <select id="listRecent" resultType="com.example.ai.token.cost.entity.CostAlert">
-        SELECT * FROM ai_cost_alert ORDER BY created_at DESC, id DESC LIMIT #{limit}
+    <select id="listRecent" resultType="com.example.ai.alert.entity.CostAlert">
+        SELECT id,
+               request_id,
+               alert_type,
+               budget_type,
+               target_id,
+               message,
+               amount,
+               severity,
+               created_at,
+               alert_level,
+               target_type,
+               threshold_value,
+               current_value,
+               status,
+               occurrence_count,
+               fingerprint,
+               last_seen_at,
+               acknowledged_at,
+               acknowledged_by,
+               resolved_at
+        FROM ai_cost_alert ORDER BY created_at DESC, id DESC LIMIT #{limit}
     </select>
 
-    <select id="findActiveByFingerprint" resultType="com.example.ai.token.cost.entity.CostAlert">
-        SELECT * FROM ai_cost_alert
+    <select id="findActiveByFingerprint" resultType="com.example.ai.alert.entity.CostAlert">
+        SELECT id,
+               request_id,
+               alert_type,
+               budget_type,
+               target_id,
+               message,
+               amount,
+               severity,
+               created_at,
+               alert_level,
+               target_type,
+               threshold_value,
+               current_value,
+               status,
+               occurrence_count,
+               fingerprint,
+               last_seen_at,
+               acknowledged_at,
+               acknowledged_by,
+               resolved_at
+        FROM ai_cost_alert
         WHERE fingerprint = #{fingerprint} AND status IN ('OPEN', 'ACKNOWLEDGED')
         ORDER BY id DESC LIMIT 1
     </select>
@@ -31,8 +71,28 @@
         WHERE id = #{id}
     </update>
 
-    <select id="findById" resultType="com.example.ai.token.cost.entity.CostAlert">
-        SELECT * FROM ai_cost_alert WHERE id = #{id}
+    <select id="findById" resultType="com.example.ai.alert.entity.CostAlert">
+        SELECT id,
+               request_id,
+               alert_type,
+               budget_type,
+               target_id,
+               message,
+               amount,
+               severity,
+               created_at,
+               alert_level,
+               target_type,
+               threshold_value,
+               current_value,
+               status,
+               occurrence_count,
+               fingerprint,
+               last_seen_at,
+               acknowledged_at,
+               acknowledged_by,
+               resolved_at
+        FROM ai_cost_alert WHERE id = #{id}
     </select>
 
     <sql id="filters">
@@ -45,8 +105,28 @@
         </where>
     </sql>
 
-    <select id="page" resultType="com.example.ai.token.cost.entity.CostAlert">
-        SELECT * FROM ai_cost_alert
+    <select id="page" resultType="com.example.ai.alert.entity.CostAlert">
+        SELECT id,
+               request_id,
+               alert_type,
+               budget_type,
+               target_id,
+               message,
+               amount,
+               severity,
+               created_at,
+               alert_level,
+               target_type,
+               threshold_value,
+               current_value,
+               status,
+               occurrence_count,
+               fingerprint,
+               last_seen_at,
+               acknowledged_at,
+               acknowledged_by,
+               resolved_at
+        FROM ai_cost_alert
         <include refid="filters"/>
         ORDER BY created_at DESC, id DESC
         LIMIT #{limit} OFFSET #{offset}
@@ -79,8 +159,28 @@
           AND (#{excludeType} IS NULL OR alert_type &lt;&gt; #{excludeType})
     </select>
 
-    <select id="listOpenByTypeAndTarget" resultType="com.example.ai.token.cost.entity.CostAlert">
-        SELECT * FROM ai_cost_alert
+    <select id="listOpenByTypeAndTarget" resultType="com.example.ai.alert.entity.CostAlert">
+        SELECT id,
+               request_id,
+               alert_type,
+               budget_type,
+               target_id,
+               message,
+               amount,
+               severity,
+               created_at,
+               alert_level,
+               target_type,
+               threshold_value,
+               current_value,
+               status,
+               occurrence_count,
+               fingerprint,
+               last_seen_at,
+               acknowledged_at,
+               acknowledged_by,
+               resolved_at
+        FROM ai_cost_alert
         WHERE alert_type = #{alertType}
           AND target_type = #{targetType}
           AND target_id = #{targetId}

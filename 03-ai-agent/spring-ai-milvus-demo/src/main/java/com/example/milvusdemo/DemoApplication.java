@@ -2,32 +2,31 @@ package com.example.milvusdemo;
 
 import org.springframework.boot.SpringApplication;
 import org.mybatis.spring.annotation.MapperScan;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.ai.vectorstore.milvus.autoconfigure.MilvusVectorStoreAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Spring Boot 启动类。
- * 启动后会由 spring-ai-starter-vector-store-milvus 自动装配 MilvusVectorStore，
- * 并在 Milvus 中自动创建集合（collectionName=java_learning_docs）。
+ * 应用启动类（企业级 AI 成本治理平台）。
+ *
+ * <p>扫描范围显式限定为两个包，避免 `com.example` 全量扫描带来意外装配：
+ * <ul>
+ *   <li>{@code com.example.ai} —— 成本治理平台主体（10 个业务域）。</li>
+ *   <li>{@code com.example.milvusdemo} —— 保留的 RAG / Milvus 遗留上下文。</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Milvus 自动配置会在启动期强制连接向量库，而成本平台默认不依赖 Milvus，
+ * 因此显式排除 {@link MilvusVectorStoreAutoConfiguration}；
+ * 需要 RAG 时由 {@code RagConfiguration} 在 {@code rag.enabled=true} 下显式 @Import 恢复。</p>
  */
-/**
- * 启动类。scanBasePackages 同时覆盖原有 RAG 包 com.example.milvusdemo 与新成本平台包 com.example.ai，
- * 保证「不删除、不破坏」已有 Milvus / Tika 功能。
- */
-// Milvus 自动配置会在启动期强制连接向量库；成本平台默认不依赖 Milvus，
-// 由 RagConfiguration 在 rag.enabled=true 时显式 @Import 恢复，原 RAG 功能完整保留。
-@SpringBootApplication(scanBasePackages = {"com.example"},
+// @MapperScan 不再硬编码各业务域的 mapper 子包（原做法在包移动时会静默失效，
+// 启动期才报 Invalid bound statement）。改为「基包 + @Mapper 注解过滤」：
+// 只有显式标注 @Mapper 的接口才会被注册，因此 identity/provider 等普通接口不会被误注册。
+@SpringBootApplication(scanBasePackages = {"com.example.ai", "com.example.milvusdemo"},
         exclude = MilvusVectorStoreAutoConfiguration.class)
-@MapperScan(basePackages = {
-        "com.example.ai.token.usage.mapper",
-        "com.example.ai.token.pricing.mapper",
-        "com.example.ai.token.budget.mapper",
-        "com.example.ai.token.cost.mapper",
-        "com.example.ai.token.analytics.mapper",
-        "com.example.ai.token.agent.mapper",
-        "com.example.ai.token.infra.mapper"
-})
+@MapperScan(basePackages = "com.example.ai", annotationClass = Mapper.class)
 @EnableScheduling
 public class DemoApplication {
 

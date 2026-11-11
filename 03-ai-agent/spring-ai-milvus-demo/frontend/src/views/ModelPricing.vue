@@ -159,13 +159,18 @@ function openHistory(row: unknown) {
       description="来源 /api/admin/ai/pricing；价格版本与历史记录由后端维护，金额一律按字符串提交以保留精度。"
     >
       <template #actions>
-        <button class="btn btn--primary btn--sm" type="button" @click="openCreate">新增价格版本</button>
+        <button class="btn btn--primary btn--sm" type="button" @click="openCreate">
+          新增价格版本
+        </button>
       </template>
     </PageHeader>
 
     <div class="notice">
       <span class="badge badge--demo">DEMO</span>
-      <span>契约约定：初版价格统一 USD，全部带 demoFlag = true，为 DEMO 示例价，不代表供应商真实报价。</span>
+      <span
+        >契约约定：初版价格统一 USD，全部带 demoFlag = true，为 DEMO
+        示例价，不代表供应商真实报价。</span
+      >
     </div>
 
     <div v-if="actionError" class="action-error" role="alert">
@@ -177,17 +182,26 @@ function openHistory(row: unknown) {
       <header class="panel__header">
         <div>
           <h3 class="panel__title">当前生效价格</h3>
-          <p class="panel__subtitle">provider / modelName / modelType / 单价 / 版本 / 生效区间 / DEMO 标记</p>
+          <p class="panel__subtitle">
+            provider / modelName / modelType / 单价 / 版本 / 生效区间 / DEMO 标记
+          </p>
         </div>
       </header>
       <DataTable
-        :columns="columns" :rows="list.data ?? []" row-key="id"
-        :loading="list.loading" :error="list.error" :error-trace-id="list.errorTraceId"
-        :empty="isEmptyOf(list)" empty-text="暂无价格版本，点击「新增价格版本」创建"
+        :columns="columns"
+        :rows="list.data ?? []"
+        row-key="id"
+        :loading="list.loading"
+        :error="list.error"
+        :error-trace-id="list.errorTraceId"
+        :empty="isEmptyOf(list)"
+        empty-text="暂无价格版本，点击「新增价格版本」创建"
         @retry="list.execute"
       >
         <template #cell-enabled="{ value }">
-          <span class="badge" :class="value ? 'badge--success' : 'badge--neutral'">{{ value ? '启用' : '停用' }}</span>
+          <span class="badge" :class="value ? 'badge--success' : 'badge--neutral'">{{
+            value ? '启用' : '停用'
+          }}</span>
         </template>
         <template #cell-demoFlag="{ value }">
           <span v-if="value" class="badge badge--demo">DEMO 示例价</span>
@@ -198,9 +212,13 @@ function openHistory(row: unknown) {
             <button class="btn btn--sm" type="button" @click.stop="openEdit(row)">编辑</button>
             <button class="btn btn--sm" type="button" @click.stop="openHistory(row)">历史</button>
             <button
-              class="btn btn--sm btn--danger" type="button"
-              :disabled="!isEnabled(row)" @click.stop="disable(row)"
-            >停用</button>
+              class="btn btn--sm btn--danger"
+              type="button"
+              :disabled="!isEnabled(row)"
+              @click.stop="disable(row)"
+            >
+              停用
+            </button>
           </div>
         </template>
       </DataTable>
@@ -210,7 +228,11 @@ function openHistory(row: unknown) {
     <Modal
       v-model="formOpen"
       :title="formMode === 'create' ? '新增价格版本' : '编辑价格版本'"
-      :subtitle="formMode === 'create' ? 'POST /api/admin/ai/pricing' : `PUT /api/admin/ai/pricing/${editingId}`"
+      :subtitle="
+        formMode === 'create'
+          ? 'POST /api/admin/ai/pricing'
+          : `PUT /api/admin/ai/pricing/${editingId}`
+      "
       width="680px"
     >
       <div v-if="formError" class="form-error" role="alert">
@@ -229,7 +251,9 @@ function openHistory(row: unknown) {
         <label class="field">
           <span class="field__label">模型类型 modelType</span>
           <select v-model="form.modelType" class="select">
-            <option v-for="o in MODEL_TYPE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            <option v-for="o in MODEL_TYPE_OPTIONS" :key="o.value" :value="o.value">
+              {{ o.label }}
+            </option>
           </select>
         </label>
         <label class="field">
@@ -263,14 +287,18 @@ function openHistory(row: unknown) {
           <span class="field__hint">ISO 8601 UTC</span>
         </label>
         <div class="field--full row">
-          <label class="checkbox"><input v-model="form.demoFlag" type="checkbox" /> DEMO 示例价 demoFlag</label>
-          <label class="checkbox"><input v-model="form.enabled" type="checkbox" /> 启用 enabled</label>
+          <label class="checkbox"
+            ><input v-model="form.demoFlag" type="checkbox" /> DEMO 示例价 demoFlag</label
+          >
+          <label class="checkbox"
+            ><input v-model="form.enabled" type="checkbox" /> 启用 enabled</label
+          >
         </div>
       </div>
       <template #footer>
         <button class="btn" type="button" @click="formOpen = false">取消</button>
         <button class="btn btn--primary" type="button" :disabled="submitting" @click="submit">
-          {{ submitting ? '提交中…' : (formMode === 'create' ? '确认新增' : '保存修改') }}
+          {{ submitting ? '提交中…' : formMode === 'create' ? '确认新增' : '保存修改' }}
         </button>
       </template>
     </Modal>
@@ -283,8 +311,12 @@ function openHistory(row: unknown) {
       width="940px"
     >
       <AsyncState
-        :loading="history.loading" :error="history.error" :error-trace-id="history.errorTraceId"
-        :empty="isEmptyOf(history)" empty-text="该模型暂无历史版本" min-height="200px"
+        :loading="history.loading"
+        :error="history.error"
+        :error-trace-id="history.errorTraceId"
+        :empty="isEmptyOf(history)"
+        empty-text="该模型暂无历史版本"
+        min-height="200px"
         @retry="history.execute"
       >
         <DataTable :columns="historyColumns" :rows="history.data ?? []" row-key="id" />
@@ -308,9 +340,16 @@ function openHistory(row: unknown) {
   font-size: var(--font-sm);
   color: var(--color-demo);
 }
-.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
-.field--full { grid-column: 1 / -1; }
-.form-error, .action-error {
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.field--full {
+  grid-column: 1 / -1;
+}
+.form-error,
+.action-error {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -324,6 +363,8 @@ function openHistory(row: unknown) {
   font-size: var(--font-sm);
 }
 @media (max-width: 560px) {
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

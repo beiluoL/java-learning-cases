@@ -72,7 +72,10 @@ export const governanceApi = {
   strategies: () => http.get<StrategyMeta[]>('/api/admin/cost-optimization/strategies'),
 
   executeOptimization: (strategy: string, text: string) =>
-    http.post<OptimizationExecuteResult>('/api/admin/cost-optimization/execute', { strategy, text }),
+    http.post<OptimizationExecuteResult>('/api/admin/cost-optimization/execute', {
+      strategy,
+      text,
+    }),
 
   optimizationHistory: (strategy: string | undefined, page: number, size: number) =>
     http.get<PageData<OptimizationLog>>('/api/admin/cost-optimization/history', {
@@ -102,7 +105,8 @@ export const governanceApi = {
   evaluateThresholds: () =>
     http.post<{ thresholdHits: ThresholdHit[] }>('/api/admin/cost-alert/evaluate'),
 
-  anomalyScan: () => http.post<{ findings: AnomalyFinding[] }>('/api/admin/cost-alert/anomaly-scan'),
+  anomalyScan: () =>
+    http.post<{ findings: AnomalyFinding[] }>('/api/admin/cost-alert/anomaly-scan'),
 
   /* ---------------- 自动保护 ---------------- */
 
@@ -132,6 +136,11 @@ export const governanceApi = {
 
   /* ---------------- Agent 成本 ---------------- */
 
-  agentTraces: (params: { page: number; size: number; userId?: string; status?: string; days?: number }) =>
-    http.get<PageData<AgentCostTrace>>('/api/admin/agent/traces', params),
+  agentTraces: (params: {
+    page: number
+    size: number
+    userId?: string
+    status?: string
+    days?: number
+  }) => http.get<PageData<AgentCostTrace>>('/api/admin/agent/traces', params),
 }

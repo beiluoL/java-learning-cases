@@ -48,7 +48,11 @@ export function useResource<T>(fetcher: () => Promise<T>) {
 }
 
 /** 统一空态判定：非加载、无错误、数据为空 */
-export function isEmptyOf(resource: { loading: boolean; error: string | null; data: unknown }): boolean {
+export function isEmptyOf(resource: {
+  loading: boolean
+  error: string | null
+  data: unknown
+}): boolean {
   return !resource.loading && !resource.error && isEmpty(resource.data)
 }
 

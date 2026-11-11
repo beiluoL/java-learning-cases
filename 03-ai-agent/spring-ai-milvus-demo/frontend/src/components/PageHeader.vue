@@ -1,9 +1,12 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  title: string
-  description?: string
-  eyebrow?: string
-}>(), { description: '', eyebrow: '' })
+withDefaults(
+  defineProps<{
+    title: string
+    description?: string
+    eyebrow?: string
+  }>(),
+  { description: '', eyebrow: '' },
+)
 </script>
 
 <template>
@@ -38,6 +41,15 @@ withDefaults(defineProps<{
   font-weight: var(--font-weight-semibold);
   letter-spacing: -0.02em;
 }
-.page-header__desc { margin-top: 4px; font-size: var(--font-sm); color: var(--color-text-muted); }
-.page-header__actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.page-header__desc {
+  margin-top: 4px;
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+}
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
 </style>
